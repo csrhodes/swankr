@@ -203,3 +203,9 @@ writeSexpToString <- function(obj) {
 `swank:autodoc` <- function(rawForm, ...) {
   "No Arglist Information"
 }
+
+`swank:throw-to-toplevel` <- function() {
+  condition <- simpleError("Throw to toplevel")
+  class(condition) <- c("swankTopLevel", class(condition))
+  signalCondition(condition)
+}
