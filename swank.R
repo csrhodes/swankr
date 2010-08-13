@@ -261,3 +261,9 @@ writeSexpToString <- function(obj) {
 `swank:debugger-info-for-emacs` <- function(io, sldbState, from, to) {
   debuggerInfoForEmacs(sldbState, from=from, to=to)
 }
+
+`swank:invoke-nth-restart-for-emacs` <- function(io, sldbState, level, n) {
+  if(sldbState$level == level) {
+    invokeRestart(computeRestarts()[[n+1]])
+  }
+}
