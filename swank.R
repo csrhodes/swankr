@@ -17,29 +17,69 @@ serve <- function(io) {
 }
 
 mainLoop <- function(io) {
-  dispatch <- function(event) {
-    str(event)
-    kind <- event[[1]]
-    if(kind == quote(`:emacs-rex`)) {
-      do.call("emacsRex", event[-1])
-    }
-  }
-  sendToEmacs <- function(obj) {
-    payload <- writeSexpToString(obj)
-    writeChar(sprintf("%06x", nchar(payload)), io, eos=NULL)
-    writeChar(payload, io, eos=NULL)
-    flush(io)
-    cat(sprintf("%06x", nchar(payload)), payload, sep="")
-  }
-  emacsRex <- function(form, pkg, thread, id) {
-    value <- do.call(eval(form[[1]]), form[-1])
-    sendToEmacs(list(quote(`:return`), list(quote(`:ok`), value), id))
-  }
-  
   while(TRUE) {
-    tryCatch(dispatch(readPacket(io)),
-             swankTopLevel=NULL)
+    tryCatch(dispatch(io, readPacket(io)),
+             swankTopLevel=function(c) NULL)
   }
+}
+
+dispatch <- function(io, event, sldbState=NULL) {
+  str(event)
+  kind <- event[[1]]
+  if(kind == quote(`:emacs-rex`)) {
+    do.call("emacsRex", c(list(io), list(sldbState), event[-1]))
+  }
+}
+
+sendToEmacs <- function(io, obj) {
+  str(obj)
+  payload <- writeSexpToString(obj)
+  writeChar(sprintf("%06x", nchar(payload)), io, eos=NULL)
+  writeChar(payload, io, eos=NULL)
+  flush(io)
+  cat(sprintf("%06x", nchar(payload)), payload, sep="")
+}
+
+emacsRex <- function(io, sldbState, form, pkg, thread, id, level=0) {
+  ok <- FALSE
+  value <- NULL
+  tryCatch({
+    withCallingHandlers({
+      value <- do.call(eval(form[[1]]), c(list(io), list(sldbState), form[-1]))
+      ok <- TRUE
+    }, error=function(c) {
+      newSldbState <- makeSldbState(c, if(is.null(sldbState)) 0 else sldbState$level+1, id)
+      sldbLoop(io, newSldbState, id) })},
+    finally=sendToEmacs(io, list(quote(`:return`), if(ok) list(quote(`:ok`), value) else list(quote(`:abort`)), id)))
+}
+
+makeSldbState <- function(condition, level, id) {
+  ret <- list(condition=condition, level=level, id=id)
+  class(ret) <- c("sldbState", class(ret))
+  ret
+}
+
+sldbLoop <- function(io, sldbState, id) {
+  sendToEmacs(io, c(list(quote(`:debug`), id, sldbState$level), debuggerInfoForEmacs(sldbState)))
+  sendToEmacs(io, list(quote(`:debug-activate`), id, sldbState$level, FALSE))
+  while(TRUE) {
+    dispatch(io, readPacket(io), sldbState)
+  }
+}
+
+debuggerInfoForEmacs <- function(sldbState, from=0, to=NULL) {
+  backtraceForEmacs <- function() {
+    calls <- sys.calls()
+    if(is.null(to)) to <- length(calls)
+    from <- from+1
+    calls <- lapply(calls[from:to], { frameNumber <- from-1;
+                             function (x) { ret <- list(frameNumber, paste(format(x), sep="", collapse=" ")); frameNumber <<- 1+frameNumber; ret }})
+  }
+  list(list(as.character(sldbState$condition), sprintf("  [%s]", class(sldbState$condition)[[1]]), FALSE),
+       lapply(computeRestarts(), function(x) list(x[[1]][[1]], x[[1]][[1]])),
+       backtraceForEmacs(),
+       list(sldbState$id))
+#       lapply(calls[from:to], function(x) paste(format(x), sep="", collapse=" ")))
 }
 
 readPacket <- function(io) {
@@ -164,7 +204,7 @@ writeSexpToString <- function(obj) {
                     }
                     string <- paste(string, ")", sep="") },
            "symbol"={ string <- paste(string, as.character(obj), sep="") },
-           "logical"={ if(obj) { paste(string, "t", sep="") } else { paste(string, "nil", sep="") }},
+           "logical"={ string <- if(obj) { paste(string, "t", sep="") } else { paste(string, "nil", sep="") }},
            "double"={ string <- paste(string, as.character(obj), sep="") },
            "integer"={ string <- paste(string, as.character(obj), sep="") },
            stop(paste("can't write object ", obj, sep="")))
@@ -174,7 +214,7 @@ writeSexpToString <- function(obj) {
   writeSexpToStringLoop(obj)
 }
 
-`swank:connection-info` <- function () {
+`swank:connection-info` <- function (io, sldbState) {
   list(quote(`:pid`), Sys.getpid(),
        quote(`:package`), list(quote(`:name`), "R", quote(`:prompt`), "R> "),
        quote(`:lisp-implementation`), list(quote(`:type`), "R",
@@ -182,15 +222,15 @@ writeSexpToString <- function(obj) {
                                            quote(`:version`), paste(R.version$major, R.version$minor, sep=".")))
 }
 
-`swank:swank-require` <- function (contribs) {
+`swank:swank-require` <- function (io, sldbState, contribs) {
   list()
 }
 
-`swank:create-repl` <- function(env, ...) {
+`swank:create-repl` <- function(io, sldbState, env, ...) {
   list("R", "R")
 }
 
-`swank:listener-eval` <- function(string) {
+`swank:listener-eval` <- function(io, sldbState, string) {
   val <- eval(parse(text=string))
   f <- fifo("")
   sink(f)
@@ -200,12 +240,16 @@ writeSexpToString <- function(obj) {
   list(quote(`:values`), paste(lines, collapse="\n"))
 }
 
-`swank:autodoc` <- function(rawForm, ...) {
+`swank:autodoc` <- function(io, sldbState, rawForm, ...) {
   "No Arglist Information"
 }
 
-`swank:throw-to-toplevel` <- function() {
-  condition <- simpleError("Throw to toplevel")
+`swank:throw-to-toplevel` <- function(io, sldbState) {
+  condition <- simpleCondition("Throw to toplevel")
   class(condition) <- c("swankTopLevel", class(condition))
   signalCondition(condition)
+}
+
+`swank:debugger-info-for-emacs` <- function(io, sldbState, from, to) {
+  debuggerInfoForEmacs(sldbState, from=from, to=to)
 }
