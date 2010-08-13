@@ -267,3 +267,7 @@ writeSexpToString <- function(obj) {
     invokeRestart(computeRestarts()[[n+1]])
   }
 }
+
+`swank:buffer-first-change` <- function(io, sldbState, filename) {
+  FALSE
+}
