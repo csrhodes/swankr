@@ -75,11 +75,19 @@ debuggerInfoForEmacs <- function(sldbState, from=0, to=NULL) {
     calls <- lapply(calls[from:to], { frameNumber <- from-1;
                              function (x) { ret <- list(frameNumber, paste(format(x), sep="", collapse=" ")); frameNumber <<- 1+frameNumber; ret }})
   }
+  computeRestartsForEmacs <- function () {
+    lapply(computeRestarts(sldbState$condition),
+           function(x) {
+             ## this is all a little bit internalsy
+             restartName <- x[[1]][[1]]
+             description <- restartDescription(x)
+             list(restartName, if(is.null(description)) restartName else description)
+           })
+  }
   list(list(as.character(sldbState$condition), sprintf("  [%s]", class(sldbState$condition)[[1]]), FALSE),
-       lapply(computeRestarts(), function(x) list(x[[1]][[1]], x[[1]][[1]])),
+       computeRestartsForEmacs(),
        backtraceForEmacs(),
        list(sldbState$id))
-#       lapply(calls[from:to], function(x) paste(format(x), sep="", collapse=" ")))
 }
 
 readPacket <- function(io) {
