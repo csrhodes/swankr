@@ -239,7 +239,7 @@ writeSexpToString <- function(obj) {
 }
 
 `swank:listener-eval` <- function(io, sldbState, string) {
-  val <- eval(parse(text=string))
+  val <- eval(parse(text=string), envir = globalenv())
   f <- fifo("")
   sink(f)
   print(val)
