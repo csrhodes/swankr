@@ -69,7 +69,7 @@ sldbLoop <- function(io, sldbState, id) {
 
 debuggerInfoForEmacs <- function(sldbState, from=0, to=NULL) {
   backtraceForEmacs <- function() {
-    calls <- sys.calls()
+    calls <- rev(sys.calls())
     if(is.null(to)) to <- length(calls)
     from <- from+1
     calls <- lapply(calls[from:to], { frameNumber <- from-1;
