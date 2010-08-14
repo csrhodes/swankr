@@ -224,6 +224,14 @@ writeSexpToString <- function(obj) {
   writeSexpToStringLoop(obj)
 }
 
+printToString <- function(val) {
+  f <- fifo("")
+  sink(f)
+  print(val)
+  sink()
+  readLines(f)
+}
+
 `swank:connection-info` <- function (io, sldbState) {
   list(quote(`:pid`), Sys.getpid(),
        quote(`:package`), list(quote(`:name`), "R", quote(`:prompt`), "R> "),
@@ -242,12 +250,8 @@ writeSexpToString <- function(obj) {
 
 `swank:listener-eval` <- function(io, sldbState, string) {
   val <- eval(parse(text=string), envir = globalenv())
-  f <- fifo("")
-  sink(f)
-  print(val)
-  sink()
-  lines <- readLines(f)
-  list(quote(`:values`), paste(lines, collapse="\n"))
+  string <- printToString(val)
+  list(quote(`:values`), paste(string, collapse="\n"))
 }
 
 `swank:autodoc` <- function(io, sldbState, rawForm, ...) {
@@ -272,4 +276,14 @@ writeSexpToString <- function(obj) {
 
 `swank:buffer-first-change` <- function(io, sldbState, filename) {
   FALSE
+}
+
+`swank:frame-locals-and-catch-tags` <- function(io, sldbState, index) {
+  str(sldbState$frames)
+  frame <- sldbState$frames[[1+index]]
+  objs <- ls(envir=frame)
+  list(lapply(objs, function(name) { list(quote(`:name`), name,
+                                          quote(`:id`), 0,
+                                          quote(`:value`), paste(printToString(eval(parse(text=name), envir=frame)), sep="", collapse="\n")) }),
+       list())
 }
