@@ -54,7 +54,9 @@ emacsRex <- function(io, sldbState, form, pkg, thread, id, level=0) {
 }
 
 makeSldbState <- function(condition, level, id) {
-  ret <- list(condition=condition, level=level, id=id)
+  calls <- rev(sys.calls())[-1]
+  frames <- rev(sys.frames())[-1]
+  ret <- list(condition=condition, level=level, id=id, calls=calls, frames=frames)
   class(ret) <- c("sldbState", class(ret))
   ret
 }
@@ -69,7 +71,7 @@ sldbLoop <- function(io, sldbState, id) {
 
 debuggerInfoForEmacs <- function(sldbState, from=0, to=NULL) {
   backtraceForEmacs <- function() {
-    calls <- rev(sys.calls())
+    calls <- sldbState$calls
     if(is.null(to)) to <- length(calls)
     from <- from+1
     calls <- lapply(calls[from:to], { frameNumber <- from-1;
