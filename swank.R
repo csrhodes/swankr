@@ -18,8 +18,9 @@ serve <- function(io) {
 
 mainLoop <- function(io) {
   while(TRUE) {
-    tryCatch(dispatch(io, readPacket(io)),
-             swankTopLevel=function(c) NULL)
+    withRestarts(tryCatch(dispatch(io, readPacket(io)),
+                          swankTopLevel=function(c) NULL),
+                 abort="return to SLIME's toplevel")
   }
 }
 
@@ -49,14 +50,15 @@ emacsRex <- function(io, sldbState, form, pkg, thread, id, level=0) {
       ok <- TRUE
     }, error=function(c) {
       newSldbState <- makeSldbState(c, if(is.null(sldbState)) 0 else sldbState$level+1, id)
-      sldbLoop(io, newSldbState, id) })},
+      withRestarts(sldbLoop(io, newSldbState, id), abort=paste("return to sldb level", newSldbState$level)) })},
     finally=sendToEmacs(io, list(quote(`:return`), if(ok) list(quote(`:ok`), value) else list(quote(`:abort`)), id)))
 }
 
 makeSldbState <- function(condition, level, id) {
   calls <- rev(sys.calls())[-1]
   frames <- rev(sys.frames())[-1]
-  ret <- list(condition=condition, level=level, id=id, calls=calls, frames=frames)
+  restarts <- rev(computeRestarts(condition))[-1]
+  ret <- list(condition=condition, level=level, id=id, restarts=restarts, calls=calls, frames=frames)
   class(ret) <- c("sldbState", class(ret))
   ret
 }
@@ -78,7 +80,7 @@ debuggerInfoForEmacs <- function(sldbState, from=0, to=NULL) {
                              function (x) { ret <- list(frameNumber, paste(format(x), sep="", collapse=" ")); frameNumber <<- 1+frameNumber; ret }})
   }
   computeRestartsForEmacs <- function () {
-    lapply(computeRestarts(sldbState$condition),
+    lapply(sldbState$restarts,
            function(x) {
              ## this is all a little bit internalsy
              restartName <- x[[1]][[1]]
@@ -270,7 +272,7 @@ printToString <- function(val) {
 
 `swank:invoke-nth-restart-for-emacs` <- function(io, sldbState, level, n) {
   if(sldbState$level == level) {
-    invokeRestart(computeRestarts()[[n+1]])
+    invokeRestart(sldbState$restarts[[n+1]])
   }
 }
 
