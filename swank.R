@@ -64,11 +64,13 @@ makeSldbState <- function(condition, level, id) {
 }
 
 sldbLoop <- function(io, sldbState, id) {
-  sendToEmacs(io, c(list(quote(`:debug`), id, sldbState$level), debuggerInfoForEmacs(sldbState)))
-  sendToEmacs(io, list(quote(`:debug-activate`), id, sldbState$level, FALSE))
-  while(TRUE) {
-    dispatch(io, readPacket(io), sldbState)
-  }
+  tryCatch({
+    sendToEmacs(io, c(list(quote(`:debug`), id, sldbState$level), debuggerInfoForEmacs(sldbState)))
+    sendToEmacs(io, list(quote(`:debug-activate`), id, sldbState$level, FALSE))
+    while(TRUE) {
+      dispatch(io, readPacket(io), sldbState)
+    }
+  }, finally=sendToEmacs(io, c(list(quote(`:debug-return`), id, sldbState$level, FALSE))))
 }
 
 debuggerInfoForEmacs <- function(sldbState, from=0, to=NULL) {
