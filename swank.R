@@ -262,6 +262,10 @@ printToString <- function(val) {
   "No Arglist Information"
 }
 
+`swank:operator-arglist` <- function(io, sldbState, op, package) {
+  list()
+}
+
 `swank:throw-to-toplevel` <- function(io, sldbState) {
   condition <- simpleCondition("Throw to toplevel")
   class(condition) <- c("swankTopLevel", class(condition))
