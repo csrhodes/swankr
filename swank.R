@@ -295,3 +295,18 @@ printToString <- function(val) {
                                           quote(`:value`), paste(printToString(eval(parse(text=name), envir=frame)), sep="", collapse="\n")) }),
        list())
 }
+
+`swank:simple-completions` <- function(io, sldbState, prefix, package) {
+  ## fails multiply if prefix contains regexp metacharacters
+  matches <- apropos(sprintf("^%s", prefix), ignore.case=FALSE)
+  nmatches <- length(matches)
+  if(nmatches == 0) {
+    list(list(), "")
+  } else {
+    longest <- matches[order(nchar(matches))][1]
+    while(length(grep(sprintf("^%s", longest), matches)) < nmatches) {
+      longest <- substr(longest, 1, nchar(longest)-1)
+    }
+    list(as.list(matches), longest)
+  }
+}
