@@ -310,3 +310,11 @@ printToString <- function(val) {
     list(as.list(matches), longest)
   }
 }
+
+`swank:compile-string-for-emacs` <- function(io, sldbState, string, buffer, position, filename, policy) {
+  # FIXME: I think in parse() here we can use srcref to associate
+  # buffer/filename/position to the objects.  Or something.
+  withRestarts({ times <- system.time(eval(parse(text=string), envir = globalenv())) },
+               abort="abort compilation")
+  list(quote(`:compilation-result`), list(), TRUE, times[3])
+}
