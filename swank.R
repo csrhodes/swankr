@@ -230,10 +230,8 @@ writeSexpToString <- function(obj) {
 
 printToString <- function(val) {
   f <- fifo("")
-  sink(f)
-  print(val)
-  sink()
-  readLines(f)
+  tryCatch({ sink(f); print(val); sink(); readLines(f) },
+           finally=close(f))
 }
 
 `swank:connection-info` <- function (io, sldbState) {
