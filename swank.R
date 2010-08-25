@@ -65,35 +65,12 @@ makeSldbState <- function(condition, level, id) {
 
 sldbLoop <- function(io, sldbState, id) {
   tryCatch({
-    sendToEmacs(io, c(list(quote(`:debug`), id, sldbState$level), debuggerInfoForEmacs(sldbState)))
+    sendToEmacs(io, c(list(quote(`:debug`), id, sldbState$level), `swank:debugger-info-for-emacs`(io, sldbState)))
     sendToEmacs(io, list(quote(`:debug-activate`), id, sldbState$level, FALSE))
     while(TRUE) {
       dispatch(io, readPacket(io), sldbState)
     }
   }, finally=sendToEmacs(io, c(list(quote(`:debug-return`), id, sldbState$level, FALSE))))
-}
-
-debuggerInfoForEmacs <- function(sldbState, from=0, to=NULL) {
-  backtraceForEmacs <- function() {
-    calls <- sldbState$calls
-    if(is.null(to)) to <- length(calls)
-    from <- from+1
-    calls <- lapply(calls[from:to], { frameNumber <- from-1;
-                             function (x) { ret <- list(frameNumber, paste(format(x), sep="", collapse=" ")); frameNumber <<- 1+frameNumber; ret }})
-  }
-  computeRestartsForEmacs <- function () {
-    lapply(sldbState$restarts,
-           function(x) {
-             ## this is all a little bit internalsy
-             restartName <- x[[1]][[1]]
-             description <- restartDescription(x)
-             list(restartName, if(is.null(description)) restartName else description)
-           })
-  }
-  list(list(as.character(sldbState$condition), sprintf("  [%s]", class(sldbState$condition)[[1]]), FALSE),
-       computeRestartsForEmacs(),
-       backtraceForEmacs(),
-       list(sldbState$id))
 }
 
 readPacket <- function(io) {
@@ -270,8 +247,35 @@ printToString <- function(val) {
   signalCondition(condition)
 }
 
-`swank:debugger-info-for-emacs` <- function(io, sldbState, from, to) {
-  debuggerInfoForEmacs(sldbState, from=from, to=to)
+`swank:backtrace` <- function(io, sldbState, from=0, to=NULL) {
+  calls <- sldbState$calls
+  if(is.null(to)) to <- length(calls)
+  from <- from+1
+  calls <- lapply(calls[from:to],
+                  { frameNumber <- from-1;
+                    function (x) {
+                      ret <- list(frameNumber, paste(format(x), sep="", collapse=" "))
+                      frameNumber <<- 1+frameNumber
+                      ret
+                    }
+                  })
+}
+
+computeRestartsForEmacs <- function (sldbState) {
+  lapply(sldbState$restarts,
+         function(x) {
+           ## this is all a little bit internalsy
+           restartName <- x[[1]][[1]]
+           description <- restartDescription(x)
+           list(restartName, if(is.null(description)) restartName else description)
+         })
+}
+
+`swank:debugger-info-for-emacs` <- function(io, sldbState, from=0, to=NULL) {
+  list(list(as.character(sldbState$condition), sprintf("  [%s]", class(sldbState$condition)[[1]]), FALSE),
+       computeRestartsForEmacs(sldbState),
+       `swank:backtrace`(io, sldbState, from, to),
+       list(sldbState$id))
 }
 
 `swank:invoke-nth-restart-for-emacs` <- function(io, sldbState, level, n) {
