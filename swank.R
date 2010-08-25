@@ -284,6 +284,21 @@ computeRestartsForEmacs <- function (sldbState) {
   }
 }
 
+`swank:frame-source-location` <- function(io, sldbState, n) {
+  call <- sldbState$calls[[n+1]]
+  srcref <- attr(call, "srcref")
+  srcfile <- attr(srcref, "srcfile")
+  if(is.null(srcfile)) {
+    list(quote(`:error`), "no srcfile")
+  } else {
+    filename <- get("filename", srcfile)
+    list(quote(`:location`),
+         list(quote(`:file`), filename),
+         list(quote(`:line`), srcref[[1]], srcref[[2]]-1),
+         FALSE)
+  }
+}
+
 `swank:buffer-first-change` <- function(io, sldbState, filename) {
   FALSE
 }
