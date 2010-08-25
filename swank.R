@@ -316,3 +316,29 @@ printToString <- function(val) {
                abort="abort compilation")
   list(quote(`:compilation-result`), list(), TRUE, times[3])
 }
+
+`swank:interactive-eval` <-  function(io, sldbState, string) {
+  retry <- TRUE
+  value <- ""
+  while(retry) {
+    retry <- FALSE
+    withRestarts(value <- eval(parse(text=string), envir = globalenv()),
+                 retry=list(description="retry SLIME interactive evaluation request", handler=function() retry <<- TRUE))
+  }
+  printToString(value)
+}
+
+`swank:eval-and-grab-output` <- function(io, sldbState, string) {
+  retry <- TRUE
+  value <- ""
+  output <- NULL
+  f <- fifo("")
+  tryCatch({
+    sink(f)
+    while(retry) {
+      retry <- FALSE
+      withRestarts(value <- eval(parse(text=string), envir = globalenv()),
+                   retry=list(description="retry SLIME interactive evaluation request", handler=function() retry <<- TRUE))}},
+           finally={sink(); output <- readLines(f); close(f)})
+  list(output, printToString(value))
+}
