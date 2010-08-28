@@ -14,9 +14,11 @@
    swankr is in the level of integration of various facilities with
    emacs: ESS uses the browser() debugger, whereas swankr provides its
    own debugger, sldb; swankr provides a custom REPL with hooks for
-   common commands; and so on.  For Lisp programmers, perhaps the most
-   useful analogy is to say that swankr is to ESS what SLIME is to
-   ILISP.  At present, however, ESS mode remains active in R source
+   common commands; and so on.  On the other hand, ESS is mature,
+   feature-rich software, while swankr is only a little more advanced
+   than a proof-of-concept.  For Lisp programmers, perhaps the most
+   useful analogy is to say that swankr intends to be to ESS what
+   SLIME is to ILISP.  At present, ESS mode remains active in R source
    buffers, providing font-locking functionality among other things.
 * Installation
 ** Running
