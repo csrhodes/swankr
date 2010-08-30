@@ -249,7 +249,8 @@ printToString <- function(val) {
 `swank:listener-eval` <- function(slimeConnection, sldbState, string) {
   val <- eval(parse(text=string), envir = globalenv())
   string <- printToString(val)
-  list(quote(`:values`), paste(string, collapse="\n"))
+  sendToEmacs(slimeConnection, list(quote(`:write-string`), paste(string, collapse="\n"), quote(`:repl-result`)))
+  list()
 }
 
 `swank:autodoc` <- function(slimeConnection, sldbState, rawForm, ...) {
