@@ -59,12 +59,32 @@ sendToEmacs <- function(slimeConnection, obj) {
   cat(sprintf("%06x", nchar(payload)), payload, sep="")
 }
 
+callify <- function(form) {
+  ## we implement here the conversion from Lisp S-expression (or list)
+  ## expressions of code into our own, swankr, calling convention,
+  ## with slimeConnection and sldbState as first and second arguments.
+  ## as.call() gets us part of the way, but we need to walk the list
+  ## recursively to mimic CL:EVAL; we need to avoid converting R
+  ## special operators which we are punning (only `quote`, for now)
+  ## into this calling convention.
+  if(is.list(form)) {
+    if(form[[1]] == quote(quote)) {
+      as.call(form)
+    } else {
+      as.call(c(list(form[[1]], quote(slimeConnection), quote(sldbState)), lapply(form[-1], callify)))
+    }
+  } else {
+    form
+  }
+}
+
 emacsRex <- function(slimeConnection, sldbState, form, pkg, thread, id, level=0) {
   ok <- FALSE
   value <- NULL
   tryCatch({
     withCallingHandlers({
-      value <- do.call(eval(form[[1]]), c(list(slimeConnection), list(sldbState), form[-1]))
+      call <- callify(form)
+      value <- eval(call)
       ok <- TRUE
     }, error=function(c) {
       newSldbState <- makeSldbState(c, if(is.null(sldbState)) 0 else sldbState$level+1, id)
