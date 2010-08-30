@@ -259,6 +259,12 @@ printToString <- function(val) {
 }
 
 `swank:swank-require` <- function (slimeConnection, sldbState, contribs) {
+  for(contrib in contribs) {
+    filename <- sprintf("%s.R", as.character(contrib))
+    if(file.exists(filename)) {
+      source(filename, verbose=TRUE)
+    }
+  }
   list()
 }
 
