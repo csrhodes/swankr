@@ -32,22 +32,25 @@ serve <- function(io) {
 }
 
 mainLoop <- function(io) {
+  slimeConnection <- new.env()
+  slimeConnection$io <- io
   while(TRUE) {
-    withRestarts(tryCatch(dispatch(io, readPacket(io)),
+    withRestarts(tryCatch(dispatch(slimeConnection, readPacket(io)),
                           swankTopLevel=function(c) NULL),
                  abort="return to SLIME's toplevel")
   }
 }
 
-dispatch <- function(io, event, sldbState=NULL) {
+dispatch <- function(slimeConnection, event, sldbState=NULL) {
   str(event)
   kind <- event[[1]]
   if(kind == quote(`:emacs-rex`)) {
-    do.call("emacsRex", c(list(io), list(sldbState), event[-1]))
+    do.call("emacsRex", c(list(slimeConnection), list(sldbState), event[-1]))
   }
 }
 
-sendToEmacs <- function(io, obj) {
+sendToEmacs <- function(slimeConnection, obj) {
+  io <- slimeConnection$io
   str(obj)
   payload <- writeSexpToString(obj)
   writeChar(sprintf("%06x", nchar(payload)), io, eos=NULL)
@@ -56,17 +59,17 @@ sendToEmacs <- function(io, obj) {
   cat(sprintf("%06x", nchar(payload)), payload, sep="")
 }
 
-emacsRex <- function(io, sldbState, form, pkg, thread, id, level=0) {
+emacsRex <- function(slimeConnection, sldbState, form, pkg, thread, id, level=0) {
   ok <- FALSE
   value <- NULL
   tryCatch({
     withCallingHandlers({
-      value <- do.call(eval(form[[1]]), c(list(io), list(sldbState), form[-1]))
+      value <- do.call(eval(form[[1]]), c(list(slimeConnection), list(sldbState), form[-1]))
       ok <- TRUE
     }, error=function(c) {
       newSldbState <- makeSldbState(c, if(is.null(sldbState)) 0 else sldbState$level+1, id)
-      withRestarts(sldbLoop(io, newSldbState, id), abort=paste("return to sldb level", newSldbState$level)) })},
-    finally=sendToEmacs(io, list(quote(`:return`), if(ok) list(quote(`:ok`), value) else list(quote(`:abort`)), id)))
+      withRestarts(sldbLoop(slimeConnection, newSldbState, id), abort=paste("return to sldb level", newSldbState$level)) })},
+    finally=sendToEmacs(slimeConnection, list(quote(`:return`), if(ok) list(quote(`:ok`), value) else list(quote(`:abort`)), id)))
 }
 
 makeSldbState <- function(condition, level, id) {
@@ -78,14 +81,15 @@ makeSldbState <- function(condition, level, id) {
   ret
 }
 
-sldbLoop <- function(io, sldbState, id) {
+sldbLoop <- function(slimeConnection, sldbState, id) {
   tryCatch({
-    sendToEmacs(io, c(list(quote(`:debug`), id, sldbState$level), `swank:debugger-info-for-emacs`(io, sldbState)))
-    sendToEmacs(io, list(quote(`:debug-activate`), id, sldbState$level, FALSE))
+    io <- slimeConnection$io
+    sendToEmacs(slimeConnection, c(list(quote(`:debug`), id, sldbState$level), `swank:debugger-info-for-emacs`(slimeConnection, sldbState)))
+    sendToEmacs(slimeConnection, list(quote(`:debug-activate`), id, sldbState$level, FALSE))
     while(TRUE) {
-      dispatch(io, readPacket(io), sldbState)
+      dispatch(slimeConnection, readPacket(io), sldbState)
     }
-  }, finally=sendToEmacs(io, c(list(quote(`:debug-return`), id, sldbState$level, FALSE))))
+  }, finally=sendToEmacs(slimeConnection, c(list(quote(`:debug-return`), id, sldbState$level, FALSE))))
 }
 
 readPacket <- function(io) {
@@ -226,7 +230,7 @@ printToString <- function(val) {
            finally=close(f))
 }
 
-`swank:connection-info` <- function (io, sldbState) {
+`swank:connection-info` <- function (slimeConnection, sldbState) {
   list(quote(`:pid`), Sys.getpid(),
        quote(`:package`), list(quote(`:name`), "R", quote(`:prompt`), "R> "),
        quote(`:lisp-implementation`), list(quote(`:type`), "R",
@@ -234,35 +238,35 @@ printToString <- function(val) {
                                            quote(`:version`), paste(R.version$major, R.version$minor, sep=".")))
 }
 
-`swank:swank-require` <- function (io, sldbState, contribs) {
+`swank:swank-require` <- function (slimeConnection, sldbState, contribs) {
   list()
 }
 
-`swank:create-repl` <- function(io, sldbState, env, ...) {
+`swank:create-repl` <- function(slimeConnection, sldbState, env, ...) {
   list("R", "R")
 }
 
-`swank:listener-eval` <- function(io, sldbState, string) {
+`swank:listener-eval` <- function(slimeConnection, sldbState, string) {
   val <- eval(parse(text=string), envir = globalenv())
   string <- printToString(val)
   list(quote(`:values`), paste(string, collapse="\n"))
 }
 
-`swank:autodoc` <- function(io, sldbState, rawForm, ...) {
+`swank:autodoc` <- function(slimeConnection, sldbState, rawForm, ...) {
   "No Arglist Information"
 }
 
-`swank:operator-arglist` <- function(io, sldbState, op, package) {
+`swank:operator-arglist` <- function(slimeConnection, sldbState, op, package) {
   list()
 }
 
-`swank:throw-to-toplevel` <- function(io, sldbState) {
+`swank:throw-to-toplevel` <- function(slimeConnection, sldbState) {
   condition <- simpleCondition("Throw to toplevel")
   class(condition) <- c("swankTopLevel", class(condition))
   signalCondition(condition)
 }
 
-`swank:backtrace` <- function(io, sldbState, from=0, to=NULL) {
+`swank:backtrace` <- function(slimeConnection, sldbState, from=0, to=NULL) {
   calls <- sldbState$calls
   if(is.null(to)) to <- length(calls)
   from <- from+1
@@ -286,20 +290,20 @@ computeRestartsForEmacs <- function (sldbState) {
          })
 }
 
-`swank:debugger-info-for-emacs` <- function(io, sldbState, from=0, to=NULL) {
+`swank:debugger-info-for-emacs` <- function(slimeConnection, sldbState, from=0, to=NULL) {
   list(list(as.character(sldbState$condition), sprintf("  [%s]", class(sldbState$condition)[[1]]), FALSE),
        computeRestartsForEmacs(sldbState),
-       `swank:backtrace`(io, sldbState, from, to),
+       `swank:backtrace`(slimeConnection, sldbState, from, to),
        list(sldbState$id))
 }
 
-`swank:invoke-nth-restart-for-emacs` <- function(io, sldbState, level, n) {
+`swank:invoke-nth-restart-for-emacs` <- function(slimeConnection, sldbState, level, n) {
   if(sldbState$level == level) {
     invokeRestart(sldbState$restarts[[n+1]])
   }
 }
 
-`swank:frame-source-location` <- function(io, sldbState, n) {
+`swank:frame-source-location` <- function(slimeConnection, sldbState, n) {
   call <- sldbState$calls[[n+1]]
   srcref <- attr(call, "srcref")
   srcfile <- attr(srcref, "srcfile")
@@ -314,11 +318,11 @@ computeRestartsForEmacs <- function (sldbState) {
   }
 }
 
-`swank:buffer-first-change` <- function(io, sldbState, filename) {
+`swank:buffer-first-change` <- function(slimeConnection, sldbState, filename) {
   FALSE
 }
 
-`swank:frame-locals-and-catch-tags` <- function(io, sldbState, index) {
+`swank:frame-locals-and-catch-tags` <- function(slimeConnection, sldbState, index) {
   str(sldbState$frames)
   frame <- sldbState$frames[[1+index]]
   objs <- ls(envir=frame)
@@ -328,7 +332,7 @@ computeRestartsForEmacs <- function (sldbState) {
        list())
 }
 
-`swank:simple-completions` <- function(io, sldbState, prefix, package) {
+`swank:simple-completions` <- function(slimeConnection, sldbState, prefix, package) {
   ## fails multiply if prefix contains regexp metacharacters
   matches <- apropos(sprintf("^%s", prefix), ignore.case=FALSE)
   nmatches <- length(matches)
@@ -343,7 +347,7 @@ computeRestartsForEmacs <- function (sldbState) {
   }
 }
 
-`swank:compile-string-for-emacs` <- function(io, sldbState, string, buffer, position, filename, policy) {
+`swank:compile-string-for-emacs` <- function(slimeConnection, sldbState, string, buffer, position, filename, policy) {
   # FIXME: I think in parse() here we can use srcref to associate
   # buffer/filename/position to the objects.  Or something.
   withRestarts({ times <- system.time(eval(parse(text=string), envir = globalenv())) },
@@ -351,7 +355,7 @@ computeRestartsForEmacs <- function (sldbState) {
   list(quote(`:compilation-result`), list(), TRUE, times[3])
 }
 
-`swank:interactive-eval` <-  function(io, sldbState, string) {
+`swank:interactive-eval` <-  function(slimeConnection, sldbState, string) {
   retry <- TRUE
   value <- ""
   while(retry) {
@@ -362,7 +366,7 @@ computeRestartsForEmacs <- function (sldbState) {
   printToString(value)
 }
 
-`swank:eval-and-grab-output` <- function(io, sldbState, string) {
+`swank:eval-and-grab-output` <- function(slimeConnection, sldbState, string) {
   retry <- TRUE
   value <- ""
   output <- NULL
