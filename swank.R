@@ -272,10 +272,22 @@ printToString <- function(val) {
   list("R", "R")
 }
 
+sendReplResult <- function(slimeConnection, value) {
+  string <- printToString(value)
+  sendToEmacs(slimeConnection,
+              list(quote(`:write-string`),
+                   paste(string, collapse="\n"),
+                   quote(`:repl-result`)))
+}
+
+sendReplResultFunction <- sendReplResult
+
 `swank:listener-eval` <- function(slimeConnection, sldbState, string) {
-  val <- eval(parse(text=string), envir = globalenv())
-  string <- printToString(val)
-  sendToEmacs(slimeConnection, list(quote(`:write-string`), paste(string, collapse="\n"), quote(`:repl-result`)))
+  string <- gsub("#\\.\\(swank:lookup-presented-object-or-lose([^)]*)\\)", ".(`swank:lookup-presented-object-or-lose`(slimeConnection, sldbState,\\1))", string)
+  expr <- parse(text=string)[[1]]
+  lookedup <- do.call("bquote", list(expr))
+  value <- eval(lookedup, envir = globalenv())
+  sendReplResultFunction(slimeConnection, value)
   list()
 }
 
