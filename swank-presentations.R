@@ -45,3 +45,10 @@ sendReplResultFunction <- presentReplResult
   }
 }
     
+`swank:clear-repl-results` <- function(slimeConnection, sldbState) {
+  if(!exists("idToObject", envir=slimeConnection)) {
+    assign("idToObject", new.env(), envir=slimeConnection)
+  }
+  rm(list=ls(slimeConnection$idToObject), envir=slimeConnection$idToObject)
+  TRUE
+}
