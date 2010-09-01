@@ -418,3 +418,28 @@ computeRestartsForEmacs <- function (sldbState) {
            finally={sink(); output <- readLines(f); close(f)})
   list(output, printToString(value))
 }
+
+`swank:find-definitions-for-emacs` <- function(slimeConnection, sldbState, string) {
+  if(exists(string, envir = globalenv())) {
+    thing <- get(string, envir = globalenv())
+    if(inherits(thing, "function")) {
+      body <- body(thing)
+      srcref <- attr(body, "srcref")
+      srcfile <- attr(body, "srcfile")
+      if(is.null(srcfile)) {
+        list()
+      } else {
+        filename <- get("filename", srcfile)
+        list(list(sprintf("function %s", string),
+                  list(quote(`:location`),
+                       list(quote(`:file`), sprintf("%s/%s", srcfile$wd, srcfile$filename)),
+                       list(quote(`:line`), srcref[[2]][[1]], srcref[[2]][[2]]-1),
+                       list())))
+      }
+    } else {
+      list()
+    }
+  } else {
+    list()
+  }
+}
