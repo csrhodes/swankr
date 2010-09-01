@@ -349,9 +349,8 @@ computeRestartsForEmacs <- function (sldbState) {
   if(is.null(srcfile)) {
     list(quote(`:error`), "no srcfile")
   } else {
-    filename <- get("filename", srcfile)
     list(quote(`:location`),
-         list(quote(`:file`), filename),
+         list(quote(`:file`), sprintf("%s/%s", srcfile$wd, srcfile$filename)),
          list(quote(`:line`), srcref[[1]], srcref[[2]]-1),
          FALSE)
   }
