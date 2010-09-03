@@ -448,3 +448,13 @@ computeRestartsForEmacs <- function (sldbState) {
     list()
   }
 }
+
+`swank:value-for-editing` <- function(slimeConnection, sldbState, string) {
+  paste(deparse(eval(parse(text=string), envir = globalenv()), control="all"),
+        collapse="\n", sep="")
+}
+
+`swank:commit-edited-value` <- function(slimeConnection, sldbState, string, value) {
+  eval(parse(text=sprintf("%s <- %s", string, value)), envir = globalenv())
+  TRUE
+}
