@@ -247,7 +247,11 @@ writeSexpToString <- function(obj) {
 
 printToString <- function(val) {
   f <- fifo("")
-  tryCatch({ sink(f); print(val); sink(); readLines(f) },
+  sink(f)
+  tryCatch({
+    tryCatch(str(val, indent.str="", list.len=5, max.level=2),
+             finally=sink())
+    readLines(f) },
            finally=close(f))
 }
 
