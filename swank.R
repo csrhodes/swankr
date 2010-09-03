@@ -113,6 +113,7 @@ sldbLoop <- function(slimeConnection, sldbState, id) {
 }
 
 readPacket <- function(io) {
+  socketSelect(list(io))
   header <- readChunk(io, 6)
   len <- strtoi(header, base=16)
   payload <- readChunk(io, len)
