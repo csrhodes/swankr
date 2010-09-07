@@ -401,25 +401,28 @@ computeRestartsForEmacs <- function (sldbState) {
   list(quote(`:compilation-result`), list(), TRUE, times[3])
 }
 
-`swank:interactive-eval` <-  function(slimeConnection, sldbState, string) {
+withRetryRestart <- function(description, expr) {
+  call <- substitute(expr)
   retry <- TRUE
-  value <- ""
   while(retry) {
     retry <- FALSE
-    withRestarts(value <- eval(parse(text=string), envir = globalenv()),
-                 retry=list(description="retry SLIME interactive evaluation request", handler=function() retry <<- TRUE))
+    withRestarts(eval.parent(call),
+                 retry=list(description=description,
+                   handler=function() retry <<- TRUE))
   }
+}
+
+`swank:interactive-eval` <-  function(slimeConnection, sldbState, string) {
+  withRetryRestart("retry SLIME interactive evaluation request",
+                   value <- eval(parse(text=string), envir=globalenv()))
   printToString(value)
 }
 
 `swank:eval-and-grab-output` <- function(slimeConnection, sldbState, string) {
-  retry <- TRUE
-  value <- ""
-  output <-
-    withOutputToString(while(retry) {
-      retry <- FALSE
-      withRestarts(value <- eval(parse(text=string), envir = globalenv()),
-                   retry=list(description="retry SLIME interactive evaluation request", handler=function() retry <<- TRUE))})
+  withRetryRestart("retry SLIME interactive evaluation request",
+                   { output <-
+                       withOutputToString(value <- eval(parse(text=string),
+                                                        envir=globalenv())) })
   list(output, printToString(value))
 }
 
