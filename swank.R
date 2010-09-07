@@ -245,14 +245,17 @@ writeSexpToString <- function(obj) {
   writeSexpToStringLoop(obj)
 }
 
-printToString <- function(val) {
+withOutputToString <- function(expr) {
+  call <- substitute(expr)
   f <- fifo("")
   sink(f)
-  tryCatch({
-    tryCatch(str(val, indent.str="", list.len=5, max.level=2),
-             finally=sink())
-    readLines(f) },
+  tryCatch({ tryCatch(eval.parent(call), finally=sink())
+             readLines(f) },
            finally=close(f))
+}
+
+printToString <- function(val) {
+  withOutputToString(str(val, indent.str="", list.len=5, max.level=2))
 }
 
 `swank:connection-info` <- function (slimeConnection, sldbState) {
@@ -412,15 +415,11 @@ computeRestartsForEmacs <- function (sldbState) {
 `swank:eval-and-grab-output` <- function(slimeConnection, sldbState, string) {
   retry <- TRUE
   value <- ""
-  output <- NULL
-  f <- fifo("")
-  tryCatch({
-    sink(f)
-    while(retry) {
+  output <-
+    withOutputToString(while(retry) {
       retry <- FALSE
       withRestarts(value <- eval(parse(text=string), envir = globalenv()),
-                   retry=list(description="retry SLIME interactive evaluation request", handler=function() retry <<- TRUE))}},
-           finally={sink(); output <- readLines(f); close(f)})
+                   retry=list(description="retry SLIME interactive evaluation request", handler=function() retry <<- TRUE))})
   list(output, printToString(value))
 }
 
