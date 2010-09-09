@@ -491,7 +491,7 @@ inspectObject <- function(slimeConnection, object) {
 
 valuePart <- function(istate, object, string) {
   list(quote(`:value`),
-       if(is.null(string)) printToString(object) else string,
+       if(is.null(string)) paste(printToString(object),collapse=" ") else string,
        assignIndexInParts(object, istate))
 }
 
