@@ -475,9 +475,12 @@ resetInspector <- function(slimeConnection) {
 }
 
 inspectObject <- function(slimeConnection, object) {
-  slimeConnection$istate <- list(object=object, previous=slimeConnection$istate)
+  previous <- slimeConnection$istate
+  slimeConnection$istate <- new.env()
+  slimeConnection$istate$object <- object
+  slimeConnection$istate$previous <- previous
   slimeConnection$istate$content <- emacsInspect(object)
-  if(!object %in% slimeConnection$inspectorHistory) {
+  if(!(object %in% slimeConnection$inspectorHistory)) {
     slimeConnection$inspectorHistory <- c(slimeConnection$inspectorHistory, object)
   }
   if(!is.null(slimeConnection$istate$previous)) {
@@ -516,7 +519,7 @@ prepareRange <- function(istate, start, end) {
 
 assignIndexInParts <- function(object, istate) {
   ret <- 1+length(istate$parts)
-  istate$parts <- c(istate$parts, object)
+  istate$parts <- c(istate$parts, list(object))
   ret
 }
 
@@ -536,7 +539,22 @@ emacsInspect.list <- function(list) {
            names(list), list))
 }
 
+emacsInspect.numeric <- function(numeric) {
+  c(list("a numeric", list(quote(`:newline`))),
+    mapply(function(name, value) { list(list(quote(`:line`), name, value)) },
+           (1:length(numeric)), numeric))
+}
+
 `swank:quit-inspector` <- function(slimeConnection, sldbState) {
   resetInspector(slimeConnection)
   FALSE
+}
+
+`swank:inspector-nth-part` <- function(slimeConnection, sldbState, index) {
+  slimeConnection$istate$parts[[index]]
+}
+
+`swank:inspect-nth-part` <- function(slimeConnection, sldbState, index) {
+  object <- `swank:inspector-nth-part`(slimeConnection, sldbState, index)
+  inspectObject(slimeConnection, object)
 }
