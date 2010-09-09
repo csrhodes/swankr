@@ -460,3 +460,79 @@ withRetryRestart <- function(description, expr) {
   eval(parse(text=sprintf("%s <- %s", string, value)), envir = globalenv())
   TRUE
 }
+
+resetInspector <- function(slimeConnection) {
+  assign("istate", list(), envir=slimeConnection)
+  assign("inspectorHistory", NULL, envir=slimeConnection)
+}
+
+`swank:init-inspector` <- function(slimeConnection, sldbState, string) {
+  withRetryRestart("retry SLIME inspection request",
+                   { resetInspector(slimeConnection)
+                     value <- inspectObject(slimeConnection, eval(parse(text=string), envir=globalenv()))
+                   })
+  value
+}
+
+inspectObject <- function(slimeConnection, object) {
+  slimeConnection$istate <- list(object=object, previous=slimeConnection$istate)
+  slimeConnection$istate$content <- emacsInspect(object)
+  if(!object %in% slimeConnection$inspectorHistory) {
+    slimeConnection$inspectorHistory <- c(slimeConnection$inspectorHistory, object)
+  }
+  if(!is.null(slimeConnection$istate$previous)) {
+    slimeConnection$istate$previous$`next` <- slimeConnection$istate
+  }
+  istateToElisp(slimeConnection$istate)
+}
+
+valuePart <- function(istate, object, string) {
+  list(quote(`:value`),
+       if(is.null(string)) printToString(object) else string,
+       assignIndexInParts(object, istate))
+}
+
+preparePart <- function(istate, part) {
+  if(is.character(part)) {
+    list(part)
+  } else {
+    switch(as.character(part[[1]]),
+           `:newline` = list("\n"),
+           `:value` = valuePart(istate, part[[2]], part[[3]]),
+           `:line` = list(printToString(part[[2]]), ": ",
+             valuePart(istate, part[[3]], NULL), "\n"))
+  }
+}
+
+prepareRange <- function(istate, start, end) {
+  range <- istate$content[start+1:min(end+1, length(istate$content))]
+  ps <- NULL
+  for(part in range) {
+    ps <- c(ps, preparePart(istate, part))
+  }
+  list(ps, if(length(ps)<end-start) { start+length(ps) } else { end+1000 },
+       start, end)
+}
+
+assignIndexInParts <- function(object, istate) {
+  ret <- 1+length(istate$parts)
+  istate$parts <- c(istate$parts, object)
+  ret
+}
+
+istateToElisp <- function(istate) {
+  list(quote(`:title`), deparse(istate$object, control="all", nlines=1),
+       quote(`:id`), assignIndexInParts(istate$object, istate),
+       quote(`:content`), prepareRange(istate, 0, 500))
+}
+
+emacsInspect <- function(object) {
+  UseMethod("emacsInspect")
+}
+
+emacsInspect.list <- function(list) {
+  c(list("a list", list(quote(`:newline`))),
+    mapply(function(name, value) { list(list(quote(`:line`), name, value)) },
+           names(list), list))
+}
+
