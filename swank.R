@@ -536,3 +536,7 @@ emacsInspect.list <- function(list) {
            names(list), list))
 }
 
+`swank:quit-inspector` <- function(slimeConnection, sldbState) {
+  resetInspector(slimeConnection)
+  FALSE
+}
