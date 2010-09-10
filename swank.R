@@ -558,3 +558,21 @@ emacsInspect.numeric <- function(numeric) {
   object <- `swank:inspector-nth-part`(slimeConnection, sldbState, index)
   inspectObject(slimeConnection, object)
 }
+
+`swank:inspector-pop` <- function(slimeConnection, sldbState) {
+  if(!is.null(slimeConnection$istate$previous)) {
+    slimeConnection$istate <- slimeConnection$istate$previous
+    istateToElisp(slimeConnection$istate)
+  } else {
+    FALSE
+  }
+}
+
+`swank:inspector-next` <- function(slimeConnection, sldbState) {
+  if(!is.null(slimeConnection$istate$`next`)) {
+    slimeConnection$istate <- slimeConnection$istate$`next`
+    istateToElisp(slimeConnection$istate)
+  } else {
+    FALSE
+  }
+}
