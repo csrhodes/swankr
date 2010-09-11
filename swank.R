@@ -576,3 +576,14 @@ emacsInspect.numeric <- function(numeric) {
     FALSE
   }
 }
+
+`swank:inspector-eval` <- function(slimeConnection, sldbState, string) {
+  expr <- parse(text=string)[[1]]
+  object <- slimeConnection$istate$object
+  if(inherits(object, "list")|inherits(object, "environment")) {
+    substituted <- substituteDirect(expr, object)
+    eval(substituted, envir=globalenv())
+  } else {
+    eval(expr, envir=globalenv())
+  }
+}
