@@ -368,6 +368,13 @@ computeRestartsForEmacs <- function (sldbState) {
   FALSE
 }
 
+`swank:eval-string-in-frame` <- function(slimeConnection, sldbState, string, index) {
+  frame <- sldbState$frames[[1+index]]
+  withRetryRestart("retry SLIME interactive evaluation request",
+                   value <- eval(parse(text=string), envir=frame))
+  printToString(value)
+}
+
 `swank:frame-locals-and-catch-tags` <- function(slimeConnection, sldbState, index) {
   str(sldbState$frames)
   frame <- sldbState$frames[[1+index]]
