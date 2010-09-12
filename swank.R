@@ -533,6 +533,10 @@ emacsInspect <- function(object) {
   UseMethod("emacsInspect")
 }
 
+emacsInspect.default <- function(thing) {
+  c(list(paste("a ", class(thing)[[1]], sep=""), list(quote(`:newline`))))
+}
+
 emacsInspect.list <- function(list) {
   c(list("a list", list(quote(`:newline`))),
     mapply(function(name, value) { list(list(quote(`:line`), name, value)) },
