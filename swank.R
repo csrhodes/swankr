@@ -591,3 +591,16 @@ emacsInspect.numeric <- function(numeric) {
     eval(expr, envir=globalenv())
   }
 }
+
+`swank:inspect-current-condition` <- function(slimeConnection, sldbState) {
+  resetInspector(slimeConnection)
+  inspectObject(slimeConnection, sldbState$condition)
+}
+
+`swank:inspect-frame-var` <- function(slimeConnection, sldbState, frame, var) {
+  resetInspector(slimeConnection)
+  frame <- sldbState$frames[[1+frame]]
+  name <- ls(envir=frame)[[1+var]]
+  object <- get(name, envir=frame)
+  inspectObject(slimeConnection, object)
+}
