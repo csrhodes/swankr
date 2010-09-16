@@ -280,12 +280,17 @@ printToString <- function(val) {
   list("R", "R")
 }
 
-sendReplResult <- function(slimeConnection, value) {
+makeReplResult <- function(value) {
   string <- printToString(value)
-  sendToEmacs(slimeConnection,
-              list(quote(`:write-string`),
-                   paste(string, collapse="\n"),
-                   quote(`:repl-result`)))
+  list(quote(`:write-string`), paste(string, collapse="\n"),
+       quote(`:repl-result`))
+}
+
+makeReplResultFunction <- makeReplResult
+
+sendReplResult <- function(slimeConnection, value) {
+  result <- makeReplResultFunction(value)
+  sendToEmacs(slimeConnection, result)
 }
 
 sendReplResultFunction <- sendReplResult
