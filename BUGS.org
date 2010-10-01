@@ -1,0 +1,16 @@
+#+SEQ_TODO: OPEN | RESOLVED
+#+TITLE: swankr: Bug list
+#+AUTHOR: Christophe Rhodes
+#+EMAIL: csr21@cantab.net
+#+OPTIONS: H:0 toc:nil
+* OPEN #1 printed output not redirected to slime repl
+  The output from functions performing printing is sent to the
+  standard output of the process running =swank()=, not to an emacs
+  stream.
+* OPEN #2 popping beyond inspector history crashes
+  Inspecting something and hitting =l= causes the R debugger to pop
+  up from trying to send =NULL= in a sexp to Emacs.
+* COMMENT:
+Local Variables:
+mode: org;
+End:

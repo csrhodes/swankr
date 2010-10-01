@@ -77,7 +77,8 @@
   accessible through
   <http://common-lisp.net/r/users/crhodes/swankr.git> and
   git://common-lisp.net/crhodes/swankr/swankr.git; a web view of the
-  development history is [[http://common-lisp.net/gitweb?p=users/crhodes/swankr.git][available through gitweb]].
+  development history is [[http://common-lisp.net/gitweb?p=users/crhodes/swankr.git][available through gitweb]].  You can also view
+  the current lists of [[file:BUGS.org]] and [[file:TODO.org]] items.
 * Acknowledgments
   Thanks to my colleagues at [[http://www.gold.ac.uk/][Goldsmiths, University of London]], for
   suggesting that I investigate R for numerical and graphical
