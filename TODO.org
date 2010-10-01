@@ -3,7 +3,7 @@
 #+EMAIL: csr21@cantab.net
 #+OPTIONS: H:2
 * Protocol requests
-** core slimefuns [31/95]
+** core slimefuns [33/95]
    - [ ] ping
    - [X] create-repl
    - [ ] create-listener
@@ -39,11 +39,11 @@
    - [ ] sldb-step
    - [ ] sldb-next
    - [ ] sldb-out
-   - [ ] compile-file-for-emacs
+   - [X] compile-file-for-emacs
    - [X] compile-string-for-emacs
    - [ ] compile-multiple-strings-for-emacs
    - [ ] compile-file-if-needed
-   - [ ] load-file
+   - [X] load-file
    - [X] swank-require
    - [ ] swank-macroexpand-1
    - [ ] swank-macroexpand

@@ -622,3 +622,17 @@ emacsInspect.numeric <- function(numeric) {
   setwd(directory)
   `swank:default-directory`(slimeConnection, sldbState)
 }
+
+`swank:load-file` <- function(slimeConnection, sldbState, filename) {
+  source(filename, local=FALSE)
+  TRUE
+}
+
+`swank:compile-file-for-emacs` <- function(slimeConnection, sldbState, filename, loadp, ...) {
+  if(loadp==quote(`t`)) {
+    source(filename, local=FALSE)
+  } else {
+    parse(filename)
+  }
+  TRUE
+}
