@@ -613,3 +613,12 @@ emacsInspect.numeric <- function(numeric) {
   object <- get(name, envir=frame)
   inspectObject(slimeConnection, object)
 }
+
+`swank:default-directory` <- function(slimeConnection, sldbState) {
+  getwd()
+}
+
+`swank:set-default-directory` <- function(slimeConnection, sldbState, directory) {
+  setwd(directory)
+  `swank:default-directory`(slimeConnection, sldbState)
+}

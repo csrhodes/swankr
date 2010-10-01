@@ -3,7 +3,7 @@
 #+EMAIL: csr21@cantab.net
 #+OPTIONS: H:2
 * Protocol requests
-** core slimefuns [29/93]
+** core slimefuns [31/95]
    - [ ] ping
    - [X] create-repl
    - [ ] create-listener
@@ -97,6 +97,8 @@
    - [ ] update-indentation-information
    - [X] frame-source-location (NB: not currently a slimefun)
    - [X] buffer-first-change (NB: not currently a slimefun)
+   - [X] default-directory (NB: not currently a slimefun)
+   - [X] set-default-directory (NB: not currently a slimefun)
 ** swank-presentations [4/5]
    - [X] lookup-presented-object
    - [X] lookup-presented-object-or-lose
