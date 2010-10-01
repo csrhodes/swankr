@@ -245,17 +245,13 @@ writeSexpToString <- function(obj) {
   writeSexpToStringLoop(obj)
 }
 
-withOutputToString <- function(expr) {
-  call <- substitute(expr)
-  f <- fifo("")
-  sink(f)
-  tryCatch({ tryCatch(eval.parent(call), finally=sink())
-             readLines(f) },
-           finally=close(f))
+prin1ToString <- function(val) {
+  paste(deparse(val, backtick=TRUE, control=c("delayPromises", "keepNA")),
+        sep="", collapse="\n")
 }
 
 printToString <- function(val) {
-  withOutputToString(str(val, indent.str="", list.len=5, max.level=2))
+  paste(capture.output(print(val)), sep="", collapse="\n")
 }
 
 `swank:connection-info` <- function (slimeConnection, sldbState) {
@@ -282,7 +278,7 @@ printToString <- function(val) {
 
 makeReplResult <- function(value) {
   string <- printToString(value)
-  list(quote(`:write-string`), paste(string, collapse="\n"),
+  list(quote(`:write-string`), string,
        quote(`:repl-result`))
 }
 
@@ -386,7 +382,7 @@ computeRestartsForEmacs <- function (sldbState) {
   objs <- ls(envir=frame)
   list(lapply(objs, function(name) { list(quote(`:name`), name,
                                           quote(`:id`), 0,
-                                          quote(`:value`), paste(printToString(eval(parse(text=name), envir=frame)), sep="", collapse="\n")) }),
+                                          quote(`:value`), printToString(eval(parse(text=name), envir=frame))) }),
        list())
 }
 
@@ -427,15 +423,16 @@ withRetryRestart <- function(description, expr) {
 `swank:interactive-eval` <-  function(slimeConnection, sldbState, string) {
   withRetryRestart("retry SLIME interactive evaluation request",
                    value <- eval(parse(text=string), envir=globalenv()))
-  printToString(value)
+  prin1ToString(value)
 }
 
 `swank:eval-and-grab-output` <- function(slimeConnection, sldbState, string) {
   withRetryRestart("retry SLIME interactive evaluation request",
                    { output <-
-                       withOutputToString(value <- eval(parse(text=string),
-                                                        envir=globalenv())) })
-  list(output, printToString(value))
+                       capture.output(value <- eval(parse(text=string),
+                                                    envir=globalenv())) })
+  output <- paste(output, sep="", collapse="\n")
+  list(output, prin1ToString(value))
 }
 
 `swank:find-definitions-for-emacs` <- function(slimeConnection, sldbState, string) {
@@ -503,7 +500,7 @@ inspectObject <- function(slimeConnection, object) {
 
 valuePart <- function(istate, object, string) {
   list(quote(`:value`),
-       if(is.null(string)) paste(printToString(object),collapse=" ") else string,
+       if(is.null(string)) printToString(object) else string,
        assignIndexInParts(object, istate))
 }
 
