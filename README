@@ -23,6 +23,7 @@
 * Installation
 ** Running
    To begin using swankr:
+
    1. start R;
    2. load the swank.R file:
 #+BEGIN_SRC R
@@ -33,16 +34,24 @@
       swank();
 #+END_SRC
    4. within emacs, load and initialize slime;
-   5. run slime-connect, accepting the default host and port, and
-      acknowledging the protocol version mismatch.
-   At this point, a R REPL should appear.
+#+BEGIN_SRC emacs-lisp
+      (require 'slime)
+      (slime-setup '(slime-repl))
+#+END_SRC
+   5. run =M-x slime-connect=, accepting the default host and port,
+      and acknowledging the protocol version mismatch.
+
+   At this point, an R REPL should appear.
 ** Emacs customization
    At a minimum, slime needs to be set up to function.  I've
    used the following forms in my =~/.emacs=
 #+BEGIN_SRC emacs-lisp
    (require 'slime)
-   (slime-setup '(slime-repl slime-scratch))
-#+END_SRCA
+   (slime-setup '(slime-repl slime-scratch slime-media))
+#+END_SRC
+   The =slime-media= contrib is new and (at present) R-specific,
+   allowing for image results to be embedded in the REPL.
+
    In addition, for keybindings like =C-c C-c= to work properly, emacs
    needs to be told how to guess where a function definition begins.
    This can be achieved with /e.g./
