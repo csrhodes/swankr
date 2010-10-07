@@ -445,9 +445,16 @@ withRetryRestart <- function(description, expr) {
         list()
       } else {
         filename <- get("filename", srcfile)
+        ## KLUDGE: what this means is "is the srcfile filename
+        ## absolute?"
+        if(substr(filename, 1, 1) == "/") {
+          file <- filename
+        } else {
+          file <- sprintf("%s/%s", srcfile$wd, filename)
+        }
         list(list(sprintf("function %s", string),
                   list(quote(`:location`),
-                       list(quote(`:file`), sprintf("%s/%s", srcfile$wd, srcfile$filename)),
+                       list(quote(`:file`), file),
                        list(quote(`:line`), srcref[[2]][[1]], srcref[[2]][[2]]-1),
                        list())))
       }
