@@ -15,6 +15,9 @@
   with a reference to the corresponding source.  Unfortunately, emacs
   only passes the buffer position in bytes (or maybe characters),
   whereas R's srcrefs work with lines and columns.
+* OPEN #4 multibyte characters corrupt slime connection
+  Not in all circumstances (e.g. "£" is OK) but 1:£ fails in
+  slime-net-read-or-lose.
 * COMMENT:
 Local Variables:
 mode: org;
