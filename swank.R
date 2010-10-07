@@ -629,10 +629,6 @@ emacsInspect.numeric <- function(numeric) {
 }
 
 `swank:compile-file-for-emacs` <- function(slimeConnection, sldbState, filename, loadp, ...) {
-  if(loadp==quote(`t`)) {
-    source(filename, local=FALSE)
-  } else {
-    parse(filename)
-  }
-  TRUE
+  times <- system.time(parse(filename))
+  list(quote(`:compilation-result`), list(), TRUE, times[3], substitute(loadp), filename)
 }
