@@ -1,4 +1,4 @@
-WEBFILES=README.html BUGS.html TODO.html
+WEBFILES=README.html BUGS.html TODO.html .htaccess
 
 web: $(WEBFILES)
 
