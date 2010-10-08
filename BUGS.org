@@ -18,6 +18,9 @@
 * OPEN #4 multibyte characters corrupt slime connection              :NORMAL:
   Not in all circumstances (e.g. ="£"= is OK) but =1:£= fails in
   slime-net-read-or-lose.
+* OPEN #5 respect visibility of evaluated results                  :WISHLIST:
+  I think we can do this by calling =.Internal(eval.with.vis(...))=
+  instead of just regular =eval()=
 * COMMENT:
 Local Variables:
 mode: org;
