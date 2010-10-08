@@ -6,10 +6,10 @@ webup: web
 	scp $(WEBFILES) common-lisp.net:public_html/swankr/
 
 README.html: README
-	emacs --batch --visit README  --eval '(org-export-as-html nil)'
+	emacs --batch --visit README --load org-export.el
 
 %.html: %.org
-	emacs --batch --visit $^ --eval '(org-export-as-html nil)'
+	emacs --batch --visit $^ --load org-export.el
 
 clean:
 	-rm $(WEBFILES)
