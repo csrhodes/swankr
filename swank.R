@@ -42,7 +42,6 @@ mainLoop <- function(io) {
 }
 
 dispatch <- function(slimeConnection, event, sldbState=NULL) {
-  str(event)
   kind <- event[[1]]
   if(kind == quote(`:emacs-rex`)) {
     do.call("emacsRex", c(list(slimeConnection), list(sldbState), event[-1]))
@@ -51,12 +50,10 @@ dispatch <- function(slimeConnection, event, sldbState=NULL) {
 
 sendToEmacs <- function(slimeConnection, obj) {
   io <- slimeConnection$io
-  str(obj)
   payload <- writeSexpToString(obj)
   writeChar(sprintf("%06x", nchar(payload)), io, eos=NULL)
   writeChar(payload, io, eos=NULL)
   flush(io)
-  cat(sprintf("%06x", nchar(payload)), payload, sep="")
 }
 
 callify <- function(form) {
@@ -81,15 +78,30 @@ callify <- function(form) {
 emacsRex <- function(slimeConnection, sldbState, form, pkg, thread, id, level=0) {
   ok <- FALSE
   value <- NULL
+  conn <- textConnection(NULL, open="w")
+  condition <- NULL
   tryCatch({
     withCallingHandlers({
       call <- callify(form)
-      value <- eval(call)
+      capture.output(value <- eval(call), file=conn)
+      string <- paste(textConnectionValue(conn), sep="", collapse="\n")
+      if(nchar(string) > 0) {
+        sendToEmacs(slimeConnection, list(quote(`:write-string`), string))
+        sendToEmacs(slimeConnection, list(quote(`:write-string`), "\n"))
+      }
+      close(conn)
       ok <- TRUE
     }, error=function(c) {
+      condition <<- c
+      string <- paste(textConnectionValue(conn), sep="", collapse="\n")
+      if(nchar(string) > 0) {
+        sendToEmacs(slimeConnection, list(quote(`:write-string`), string))
+        sendToEmacs(slimeConnection, list(quote(`:write-string`), "\n"))
+      }
+      close(conn)
       newSldbState <- makeSldbState(c, if(is.null(sldbState)) 0 else sldbState$level+1, id)
       withRestarts(sldbLoop(slimeConnection, newSldbState, id), abort=paste("return to sldb level", newSldbState$level)) })},
-    finally=sendToEmacs(slimeConnection, list(quote(`:return`), if(ok) list(quote(`:ok`), value) else list(quote(`:abort`)), id)))
+    finally=sendToEmacs(slimeConnection, list(quote(`:return`), if(ok) list(quote(`:ok`), value) else list(quote(`:abort`), as.character(condition)), id)))
 }
 
 makeSldbState <- function(condition, level, id) {
@@ -266,7 +278,7 @@ printToString <- function(val) {
   for(contrib in contribs) {
     filename <- sprintf("%s.R", as.character(contrib))
     if(file.exists(filename)) {
-      source(filename, verbose=TRUE)
+      source(filename)
     }
   }
   list()

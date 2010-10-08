@@ -3,7 +3,7 @@
 #+AUTHOR: Christophe Rhodes
 #+EMAIL: csr21@cantab.net
 #+OPTIONS: H:0 toc:nil
-* OPEN #1 printed output not redirected to slime repl                 :MINOR:
+* RESOLVED #1 printed output not redirected to slime repl       :MINOR:FIXED:
   The output from functions performing printing is sent to the
   standard output of the process running =swank()=, not to an emacs
   stream.
