@@ -401,11 +401,42 @@ computeRestartsForEmacs <- function (sldbState) {
 }
 
 `swank:compile-string-for-emacs` <- function(slimeConnection, sldbState, string, buffer, position, filename, policy) {
-  # FIXME: I think in parse() here we can use srcref to associate
-  # buffer/filename/position to the objects.  Or something.
-  withRestarts({ times <- system.time(eval(parse(text=string), envir = globalenv())) },
+  lineOffset <- charOffset <- colOffset <- NULL
+  for(pos in position) {
+    switch(as.character(pos[[1]]),
+           `:position` = {charOffset <- pos[[2]]},
+           `:line` = {lineOffset <- pos[[2]]; colOffset <- pos[[3]]},
+           warning("unknown content in pos", pos))
+  }
+  frob <- function(refs) {
+    lapply(refs,
+           function(x)
+           srcref(attr(x,"srcfile"),
+                  c(x[1]+lineOffset-1, ifelse(x[1]==1, x[2]+colOffset-1, x[2]),
+                    x[3]+lineOffset-1, ifelse(x[3]==1, x[4]+colOffset-1, x[4]),
+                    ifelse(x[1]==1, x[5]+colOffset-1, x[5]),
+                    ifelse(x[3]==1, x[6]+colOffset-1, x[6]))))
+  }
+  transformSrcrefs <- function(s) {
+    srcrefs <- attr(s, "srcref")
+    attribs <- attributes(s)
+    new <- 
+      switch(mode(s),
+             "call"=as.call(lapply(s, transformSrcrefs)),
+             "expression"=as.expression(lapply(s, transformSrcrefs)),
+             s)
+    attributes(new) <- attribs
+    if(!is.null(attr(s, "srcref"))) {
+      attr(new, "srcref") <- frob(srcrefs)
+    }
+    new
+  }
+  withRestarts({
+    times <- system.time({
+      exprs <- parse(text=string, srcfile=srcfile(filename))
+      eval(transformSrcrefs(exprs), envir = globalenv()) })},
                abort="abort compilation")
-  list(quote(`:compilation-result`), list(), TRUE, times[3])
+  list(quote(`:compilation-result`), list(), TRUE, times[3], FALSE, FALSE)
 }
 
 withRetryRestart <- function(description, expr) {

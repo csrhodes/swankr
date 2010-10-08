@@ -10,7 +10,7 @@
 * OPEN #2 popping beyond inspector history crashes                   :NORMAL:
   Inspecting something and hitting =l= causes the R debugger to pop
   up from trying to send =NULL= in a sexp to Emacs.
-* OPEN #3 source reference in compile-string-for-emacs             :WISHLIST:
+* RESOLVED #3 source reference in compile-string-for-emacs   :WISHLIST:FIXED:
   It would be good if we could associate the expressions in the string
   with a reference to the corresponding source.  Unfortunately, emacs
   only passes the buffer position in bytes (or maybe characters),
