@@ -16,4 +16,20 @@ makeMediaReplResult.trellis <- function(value) {
        deparse(value$call, nlines=1))
 }
 
+makeMediaReplResult.numeric <- function(value) {
+  string <- paste(deparse(value), sep="", collapse="\n")
+  list(quote(`:write-string`), string, quote(`:repl-result`))
+}
+makeMediaReplResult.complex <- function(value) {
+  string <- deparse(value)
+  list(quote(`:write-string`), string, quote(`:repl-result`))
+}
+
+makeMediaReplResult.array <- function(value) {
+  makeMediaReplResult.default(value)
+}
+makeMediaReplResult.matrix <- function(value) {
+  makeMediaReplResult.default(value)
+}
+
 makeReplResultFunction <- makeMediaReplResult
