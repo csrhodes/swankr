@@ -21,6 +21,13 @@
 * OPEN #5 respect visibility of evaluated results                  :WISHLIST:
   I think we can do this by calling =.Internal(eval.with.vis(...))=
   instead of just regular =eval()=
+* OPEN #6 occasional invalid sink() errors                           :NORMAL:
+  Not sure yet when it happens, but it makes the terminal browser pop up.
+* OPEN #7 swank server is uninterruptible                            :NORMAL:
+  at least in certain conditions
+* OPEN #8 startup is not filesystem-location independent              :MINOR:
+  Requires the cwd to be the swankr directory to be able to find
+  swank-presentations and swank-media
 * COMMENT:
 Local Variables:
 mode: org;

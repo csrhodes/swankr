@@ -2,6 +2,16 @@
 #+AUTHOR: Christophe Rhodes
 #+EMAIL: csr21@cantab.net
 #+OPTIONS: H:2
+* Conveniences
+** make it straightforward to try
+   - document new startup method
+** ?documentation within emacs 
+   - like ESS at a minimum
+   - more org-mode-like navigation?
+** handle SIGINT somehow
+   this might be difficult; it probably requires dynamic variables to
+   be able to get the slimeConnection and sldbState currently active
+   (because the interrupt can happen at any point...)
 * Protocol requests
 ** core slimefuns [33/95]
    - [ ] ping
@@ -119,8 +129,14 @@
     Or rather some equivalent functionality, offering tab-completion
     and ,load-library repl shortcut
 * New features
+** fix slime-media for CL compatibility
+   (something makes it hard to use images from CL -- package printing
+   stuff?)
 ** more use of slime-media
    We have this functionality; let's use it!
+*** bold / emphasis in ordinary printing
+    e.g. italic for marginal significance, bold for clear (or for
+    highest value in contingency tables)
 * COMMENT:
 Local Variables:
 mode: org;
