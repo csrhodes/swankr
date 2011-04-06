@@ -27,7 +27,6 @@ sendReplResultFunction <- presentReplResult
 }
 
 `swank:lookup-presented-object` <- function(slimeConnection, sldbState, id) {
-  str(ls(slimeConnection))
   if(exists(as.character(id), envir=slimeConnection$idToObject)) {
     value <- get(as.character(id), envir=slimeConnection$idToObject)
     list(value, TRUE)
