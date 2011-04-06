@@ -690,12 +690,18 @@ emacsInspect.numeric <- function(numeric) {
 }
 
 `swank:load-file` <- function(slimeConnection, sldbState, filename) {
-  source(filename, local=FALSE)
+  source(filename, local=FALSE, keep.source=TRUE)
   TRUE
 }
 
 `swank:compile-file-for-emacs` <- function(slimeConnection, sldbState, filename, loadp, ...) {
-  times <- system.time(parse(filename))
+  times <- system.time(parse(filename, srcfile=srcfile(filename)))
+  if(loadp) {
+    ## KLUDGE: inelegant, but works.  It might be more in the spirit
+    ## of things to keep the result of the parse above around to
+    ## evaluate.
+    `swank:load-file`(slimeConnection, sldbState, filename)
+  }
   list(quote(`:compilation-result`), list(), TRUE, times[3], substitute(loadp), filename)
 }
 
