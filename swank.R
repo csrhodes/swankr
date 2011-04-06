@@ -210,7 +210,14 @@ readSexpFromString <- function(string) {
     } else if(grepl("^[0-9]+\\.[0-9]+$", token)) {
       as.double(token)
     } else {
-      as.name(token)
+      name <- as.name(token)
+      if(name == quote(t)) {
+        TRUE
+      } else if(name == quote(nil)) {
+        FALSE
+      } else {
+        name
+      }
     }
   }
   readToken <- function() {
