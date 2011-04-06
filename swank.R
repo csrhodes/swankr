@@ -691,3 +691,7 @@ emacsInspect.numeric <- function(numeric) {
   times <- system.time(parse(filename))
   list(quote(`:compilation-result`), list(), TRUE, times[3], substitute(loadp), filename)
 }
+
+`swank:quit-lisp` <- function(slimeConnection, sldbState) {
+  quit()
+}
