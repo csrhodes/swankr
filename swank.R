@@ -304,8 +304,10 @@ sendReplResult <- function(slimeConnection, value) {
 sendReplResultFunction <- sendReplResult
 
 `swank:listener-eval` <- function(slimeConnection, sldbState, string) {
+  ## O how ugly
   string <- gsub("#\\.\\(swank:lookup-presented-object-or-lose([^)]*)\\)", ".(`swank:lookup-presented-object-or-lose`(slimeConnection, sldbState,\\1))", string)
   expr <- parse(text=string)[[1]]
+  ## O maybe this is even uglier
   lookedup <- do.call("bquote", list(expr))
   value <- eval(lookedup, envir = globalenv())
   sendReplResultFunction(slimeConnection, value)
@@ -370,8 +372,16 @@ computeRestartsForEmacs <- function (sldbState) {
   if(is.null(srcfile)) {
     list(quote(`:error`), "no srcfile")
   } else {
+    filename <- get("filename", srcfile)
+    ## KLUDGE: what this means is "is the srcfile filename
+    ## absolute?"
+    if(substr(filename, 1, 1) == "/") {
+      file <- filename
+    } else {
+      file <- sprintf("%s/%s", srcfile$wd, filename)
+    }
     list(quote(`:location`),
-         list(quote(`:file`), sprintf("%s/%s", srcfile$wd, srcfile$filename)),
+         list(quote(`:file`), file),
          list(quote(`:line`), srcref[[1]], srcref[[2]]-1),
          FALSE)
   }
