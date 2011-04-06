@@ -18,10 +18,15 @@ swank <- function(port=4005) {
 }
 
 startSwank <- function(portFile) {
-  acceptConnections(FALSE, portFile)
+  acceptConnections(4005, portFile)
 }
 
 acceptConnections <- function(port, portFile) {
+  if(portFile != FALSE) {
+    f <- file(portFile, open="w+")
+    cat(port, file=f)
+    close(f)
+  }
   s <- socketConnection(host="localhost", server=TRUE, port=port, open="r+b")
   on.exit(close(s))
   serve(s)
