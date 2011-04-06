@@ -494,6 +494,12 @@ withRetryRestart <- function(description, expr) {
   list(output, prin1ToString(value))
 }
 
+`swank:interactive-eval-region` <- function(slimeConnection, sldbState, string) {
+  withRetryRestart("retry SLIME interactive evaluation request",
+                   value <- eval(parse(text=string), envir=globalenv()))
+  prin1ToString(value)
+}
+
 `swank:find-definitions-for-emacs` <- function(slimeConnection, sldbState, string) {
   if(exists(string, envir = globalenv())) {
     thing <- get(string, envir = globalenv())
