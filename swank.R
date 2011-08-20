@@ -13,6 +13,12 @@
 ### latest version of the GNU General Public Licence is available at
 ### <http://www.gnu.org/licenses/gpl.txt>.
 
+### KLUDGE: this assumes that we're being sourced with chdir=TRUE.
+### (If not, `swank:swank-require` will work under the circumstances
+### that it used to work anyway -- i.e. the working directory is the
+### swankr directory)
+swankrPath <- getwd() 
+
 swank <- function(port=4005) {
   acceptConnections(port, FALSE)
 }
@@ -288,7 +294,7 @@ printToString <- function(val) {
 
 `swank:swank-require` <- function (slimeConnection, sldbState, contribs) {
   for(contrib in contribs) {
-    filename <- sprintf("%s.R", as.character(contrib))
+    filename <- sprintf("%s/%s.R", swankrPath, as.character(contrib))
     if(file.exists(filename)) {
       source(filename)
     }
