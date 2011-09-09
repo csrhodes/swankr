@@ -25,7 +25,7 @@
   Not sure yet when it happens, but it makes the terminal browser pop up.
 * OPEN #7 swank server is uninterruptible                            :NORMAL:
   at least in certain conditions
-* OPEN #8 startup is not filesystem-location independent              :MINOR:
+* RESOLVED #8 startup is not filesystem-location independent          :MINOR:
   Requires the cwd to be the swankr directory to be able to find
   swank-presentations and swank-media
 * COMMENT:
