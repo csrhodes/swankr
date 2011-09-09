@@ -15,6 +15,15 @@ makeMediaReplResult.trellis <- function(value) {
                                         quote(`:file`), filename)),
        deparse(value$call, nlines=1))
 }
+makeMediaReplResult.ggplot <- function(value) {
+  filename <- tempfile("swank-media-")
+  png(filename, width=320, height=200)
+  print(value)
+  dev.off()
+  list(quote(`:write-image`), list(list(quote(`:type`), quote(png),
+                                        quote(`:file`), filename)),
+       deparse(value$call, nlines=1))
+}
 
 makeMediaReplResult.numeric <- function(value) {
   string <- paste(deparse(value), sep="", collapse="\n")
