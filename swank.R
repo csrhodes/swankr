@@ -324,12 +324,14 @@ sendReplResultFunction <- sendReplResult
 `swank:listener-eval` <- function(slimeConnection, sldbState, string) {
   ## O how ugly
   string <- gsub("#\\.\\(swank:lookup-presented-object-or-lose([^)]*)\\)", ".(`swank:lookup-presented-object-or-lose`(slimeConnection, sldbState,\\1))", string)
-  expr <- parse(text=string)[[1]]
-  ## O maybe this is even uglier
-  lookedup <- do.call("bquote", list(expr))
-  tmp <- withVisible(eval(lookedup, envir = globalenv()))
-  if(tmp$visible) {
-    sendReplResultFunction(slimeConnection, tmp$value)
+  for(expr in parse(text=string)) {
+    expr <- expr
+    ## O maybe this is even uglier
+    lookedup <- do.call("bquote", list(expr))
+    tmp <- withVisible(eval(lookedup, envir = globalenv()))
+    if(tmp$visible) {
+      sendReplResultFunction(slimeConnection, tmp$value)
+    }
   }
   list()
 }

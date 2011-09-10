@@ -31,7 +31,7 @@
 * OPEN #9 help and ? to produce help buffers                       :WISHLIST:
   Not like ESS, though: that works by looking at the user's input with
   a regexp.  Use slime-media?
-* OPEN #10 0 or more than 1 exprs at REPL                             :MINOR:
+* RESOLVED #10 0 or more than 1 exprs at REPL                   :MINOR:FIXED:
   Entering 0 exprs (whitespace or the empty string) at the REPL gives
   an error from `swank:listener-eval`, which subscripts the parse tree
   with index 1.  (Entering more than one simply ignores all after the
