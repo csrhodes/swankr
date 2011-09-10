@@ -327,8 +327,10 @@ sendReplResultFunction <- sendReplResult
   expr <- parse(text=string)[[1]]
   ## O maybe this is even uglier
   lookedup <- do.call("bquote", list(expr))
-  value <- eval(lookedup, envir = globalenv())
-  sendReplResultFunction(slimeConnection, value)
+  tmp <- withVisible(eval(lookedup, envir = globalenv()))
+  if(tmp$visible) {
+    sendReplResultFunction(slimeConnection, tmp$value)
+  }
   list()
 }
 
@@ -492,23 +494,35 @@ withRetryRestart <- function(description, expr) {
 
 `swank:interactive-eval` <-  function(slimeConnection, sldbState, string) {
   withRetryRestart("retry SLIME interactive evaluation request",
-                   value <- eval(parse(text=string), envir=globalenv()))
-  prin1ToString(value)
+                   tmp <- withVisible(eval(parse(text=string), envir=globalenv())))
+  if(tmp$visible) {
+    prin1ToString(tmp$value)
+  } else {
+    "# invisible value"
+  }
 }
 
 `swank:eval-and-grab-output` <- function(slimeConnection, sldbState, string) {
   withRetryRestart("retry SLIME interactive evaluation request",
                    { output <-
-                       capture.output(value <- eval(parse(text=string),
-                                                    envir=globalenv())) })
+                       capture.output(tmp <- withVisible(eval(parse(text=string),
+                                                              envir=globalenv()))) })
   output <- paste(output, sep="", collapse="\n")
-  list(output, prin1ToString(value))
+  if(tmp$visible) {
+    list(output, prin1ToString(value))
+  } else {
+    list(output, "# invisible value")
+  }
 }
 
 `swank:interactive-eval-region` <- function(slimeConnection, sldbState, string) {
   withRetryRestart("retry SLIME interactive evaluation request",
-                   value <- eval(parse(text=string), envir=globalenv()))
-  prin1ToString(value)
+                   tmp <- withVisible(eval(parse(text=string), envir=globalenv())))
+  if(tmp$visible) {
+    prin1ToString(value)
+  } else {
+    "# invisible value"
+  }
 }
 
 `swank:find-definitions-for-emacs` <- function(slimeConnection, sldbState, string) {
