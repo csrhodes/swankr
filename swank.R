@@ -430,14 +430,17 @@ computeRestartsForEmacs <- function (sldbState) {
 }
 
 `swank:simple-completions` <- function(slimeConnection, sldbState, prefix, package) {
-  ## fails multiply if prefix contains regexp metacharacters
-  matches <- apropos(sprintf("^%s", prefix), ignore.case=FALSE)
+  literal2rx <- function(string) {
+    ## list of ERE metacharacters from ?regexp
+    gsub("([.\\|()[{^$*+?])", "\\\\\\1", string)
+  }
+  matches <- apropos(sprintf("^%s", literal2rx(prefix)), ignore.case=FALSE)
   nmatches <- length(matches)
   if(nmatches == 0) {
     list(list(), "")
   } else {
     longest <- matches[order(nchar(matches))][1]
-    while(length(grep(sprintf("^%s", longest), matches)) < nmatches) {
+    while(length(grep(sprintf("^%s", literal2rx(longest)), matches)) < nmatches) {
       longest <- substr(longest, 1, nchar(longest)-1)
     }
     list(as.list(matches), longest)

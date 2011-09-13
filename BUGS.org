@@ -42,7 +42,7 @@
   Logged here so that I don't forget it if I sort out #9 first: we
   need to be able to indicate "no repl result please" if we open a new
   temporary buffer to display the result.
-* OPEN #12 need to be more careful when searching for completions    :NORMAL:
+* RESOLVED #12 escaping when searching for completions         :NORMAL:FIXED:
   Gets thoroughly confused on completing "read." because the "." is
   treated as a regexp "any character" pattern.
 * COMMENT:
