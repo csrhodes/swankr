@@ -28,7 +28,7 @@
 * RESOLVED #8 startup is not filesystem-location independent    :MINOR:FIXED:
   Requires the cwd to be the swankr directory to be able to find
   swank-presentations and swank-media
-* OPEN #9 help and ? to produce help buffers                       :WISHLIST:
+* RESOLVED #9 help and ? to produce help buffers             :WISHLIST:FIXED:
   Not like ESS, though: that works by looking at the user's input with
   a regexp.  Use slime-media?
 * RESOLVED #10 0 or more than 1 exprs at REPL                   :MINOR:FIXED:
