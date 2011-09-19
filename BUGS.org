@@ -45,6 +45,15 @@
 * RESOLVED #12 escaping when searching for completions         :NORMAL:FIXED:
   Gets thoroughly confused on completing "read." because the "." is
   treated as a regexp "any character" pattern.
+* OPEN #13 source location in sldb wrong                              :MINOR:
+  I think there's an off-by-one in the association between frames and
+  srcrefs.  Test case is something like 1+"foo" at the repl, and then
+  hitting "v" on the `swank:listener-eval` frame.
+* OPEN #14 thread argument to emacsRex unused                        :NORMAL:
+  This is a problem not least because it causes all sorts of problems
+  in inspecting swank-internal frames in sldb; test case is 1+"foo",
+  then RET on the eval(expr, envir, enclos) frame just below
+  `swank:listener-eval`.
 * COMMENT:
 Local Variables:
 mode: org;
