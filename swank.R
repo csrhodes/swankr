@@ -425,7 +425,12 @@ computeRestartsForEmacs <- function (sldbState) {
   objs <- ls(envir=frame)
   list(lapply(objs, function(name) { list(quote(`:name`), name,
                                           quote(`:id`), 0,
-                                          quote(`:value`), printToString(eval(parse(text=name), envir=frame))) }),
+                                          quote(`:value`),
+                                          tryCatch({
+                                            printToString(eval(parse(text=name), envir=frame))
+                                          }, error=function(c) {
+                                            sprintf("error printing object")
+                                          }))}),
        list())
 }
 
