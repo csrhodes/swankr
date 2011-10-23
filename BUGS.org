@@ -48,12 +48,19 @@
 * OPEN #13 source location in sldb wrong                              :MINOR:
   I think there's an off-by-one in the association between frames and
   srcrefs.  Test case is something like 1+"foo" at the repl, and then
-  hitting "v" on the `swank:listener-eval` frame.
+  hitting "v" on the `swank:listener-eval` frame.  Also the arglists
+  seem weird to me; in a call like frob(foo), I would expect to see
+  the value of foo in the locals.
 * OPEN #14 thread argument to emacsRex unused                        :NORMAL:
   This is a problem not least because it causes all sorts of problems
   in inspecting swank-internal frames in sldb; test case is 1+"foo",
   then RET on the eval(expr, envir, enclos) frame just below
   `swank:listener-eval`.
+* OPEN #15 write and use Rd2org instead of Rd2txt                  :WISHLIST:
+  org-mode is the future!
+* OPEN #16 ESS configuration                                          :MINOR:
+  sorting out the function regexp at least, but generally reducing
+  dependence might be good.
 * COMMENT:
 Local Variables:
 mode: org;
