@@ -30,7 +30,7 @@ makeMediaReplResult.numeric <- function(value) {
   list(quote(`:write-string`), string, quote(`:repl-result`))
 }
 makeMediaReplResult.complex <- function(value) {
-  string <- deparse(value)
+  string <- paste(deparse(value), sep="", collapse="\n")
   list(quote(`:write-string`), string, quote(`:repl-result`))
 }
 
