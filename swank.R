@@ -519,7 +519,7 @@ withRetryRestart <- function(description, expr) {
                                                               envir=globalenv()))) })
   output <- paste(output, sep="", collapse="\n")
   if(tmp$visible) {
-    list(output, prin1ToString(value))
+    list(output, prin1ToString(tmp$value))
   } else {
     list(output, "# invisible value")
   }
@@ -529,7 +529,7 @@ withRetryRestart <- function(description, expr) {
   withRetryRestart("retry SLIME interactive evaluation request",
                    tmp <- withVisible(eval(parse(text=string), envir=globalenv())))
   if(tmp$visible) {
-    prin1ToString(value)
+    prin1ToString(tmp$value)
   } else {
     "# invisible value"
   }
