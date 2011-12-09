@@ -62,7 +62,7 @@ dispatch <- function(slimeConnection, event, sldbState=NULL) {
 sendToEmacs <- function(slimeConnection, obj) {
   io <- slimeConnection$io
   payload <- writeSexpToString(obj)
-  writeChar(sprintf("%06x", nchar(payload)), io, eos=NULL)
+  writeChar(sprintf("%06x", nchar(payload, type="bytes")), io, eos=NULL)
   writeChar(payload, io, eos=NULL)
   flush(io)
 }
