@@ -61,6 +61,12 @@
 * OPEN #16 ESS configuration                                          :MINOR:
   sorting out the function regexp at least, but generally reducing
   dependence might be good.
+* OPEN #17 encoding / external-format confusion                      :NORMAL:
+  We declare ourselves capable of handling utf-8-unix encoding, but
+  whether we actually do anything close to being correct is unclear.
+  (Almost certainly not; I suspect we naïvely use nchar() in places).
+  We could either declare our encoding as latin1-unix, or make the
+  server utf8ly correct.  To reproduce, simply type "ë" at the repl.
 * COMMENT:
 Local Variables:
 mode: org;
