@@ -287,6 +287,7 @@ printToString <- function(val) {
 `swank:connection-info` <- function (slimeConnection, sldbState) {
   list(quote(`:pid`), Sys.getpid(),
        quote(`:package`), list(quote(`:name`), "R", quote(`:prompt`), "R> "),
+       quote(`:encoding`), list(quote(`:coding-systems`), list("utf-8-unix")),
        quote(`:lisp-implementation`), list(quote(`:type`), "R",
                                            quote(`:name`), "R",
                                            quote(`:version`), paste(R.version$major, R.version$minor, sep=".")))
