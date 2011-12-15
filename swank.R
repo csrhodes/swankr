@@ -33,9 +33,10 @@ acceptConnections <- function(port, portFile) {
     cat(port, file=f)
     close(f)
   }
+  ## FIXME: maybe we should support dontClose here?
   s <- socketConnection(host="localhost", server=TRUE, port=port, open="r+b")
   on.exit(close(s))
-  serve(s)
+  tryCatch(serve(s), endOfFile=function(c) NULL)
 }
 
 serve <- function(io) {
@@ -145,6 +146,11 @@ readPacket <- function(io) {
 
 readChunk <- function(io, len) {
   buffer <- readChar(io, len)
+  if(length(buffer) == 0) {
+    condition <- simpleCondition("End of file on io")
+    class(condition) <- c("endOfFile", class(condition))
+    signalCondition(condition)
+  }
   if(nchar(buffer) != len) {
     stop("short read in readChunk")
   }

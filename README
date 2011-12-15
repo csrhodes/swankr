@@ -21,37 +21,39 @@
    SLIME is to ILISP.  At present, ESS mode remains active in R source
    buffers, providing font-locking functionality among other things.
 * Installation
-** Running
-   To begin using swankr:
+** Emacs configuration
+*** Installing SLIME
+    SLIME is required separately from swankr.  To install slime,
+    perhaps the simplest is to pull the CVS sources into a
+    user-specific site directory, and arrange for that to be on the
+    emacs =load-path=; I did
+#+begin_src sh
+mkdir -p ~/.emacs.d/site-lisp
+cd ~/.emacs.d/site-lisp
+cvs -z3 -d:pserver:anonymous:anonymous@common-lisp.net:/project/slime/cvsroot co slime
+#+end_src
 
-   1. start R;
-   2. load the swank.R file:
-#+BEGIN_SRC R
-      source("swank.R")
-#+END_SRC
-   3. at the R prompt, run
-#+BEGIN_SRC R
-      swank();
-#+END_SRC
-   4. within emacs, load and initialize slime;
-#+BEGIN_SRC emacs-lisp
-      (require 'slime)
-      (slime-setup '(slime-repl))
-#+END_SRC
-   5. run =M-x slime-connect=, accepting the default host and port,
-      and acknowledging the protocol version mismatch.
+    Following that, I have in my =~/.emacs= (you will need to adjust
+    paths to executables and source files):
+#+begin_src emacs-lisp
+;;; ~/.emacs.d/
+(let ((default-directory (concat user-emacs-directory (convert-standard-filename "site-lisp/"))))
+  (normal-top-level-add-subdirs-to-load-path))
 
-   At this point, an R REPL should appear.
-** Emacs customization
-   At a minimum, slime needs to be set up to function.  I've
-   used the following forms in my =~/.emacs=
-#+BEGIN_SRC emacs-lisp
-   (require 'slime)
-   (slime-setup '(slime-repl slime-scratch slime-media))
-#+END_SRC
-   The =slime-media= contrib is new and (at present) R-specific,
-   allowing for image results to be embedded in the REPL.
-
+;;; SLIME
+(require 'slime)
+(setq slime-net-coding-system 'utf-8-unix)
+(slime-setup '(slime-asdf slime-repl slime-scratch slime-presentations slime-media))
+(setq slime-lisp-implementations
+      '((sbcl ("sbcl" "--dynamic-space-size" "2048" "--load" "/home/csr21/src/lisp/quicklisp/setup.lisp"))
+        (git-sbcl ("sh" "/home/csr21/src/lisp/sbcl/run-sbcl.sh" "--dynamic-space-size" "2048"))
+        (R ("R" "--no-save" "--max-vsize=4096M")
+           :init (lambda (port-filename coding-system) 
+                   (format
+                    "source('/home/csr21/src/R/swankr/swank.R', keep.source=TRUE, chdir=TRUE)\nstartSwank('%s')\n" port-filename)))))
+(global-set-key (kbd "s-s") 'slime-selector)
+#+end_src
+*** Additional refinements
    In addition, for keybindings like =C-c C-c= to work properly, emacs
    needs to be told how to guess where a function definition begins.
    This can be achieved with /e.g./
@@ -72,11 +74,40 @@
                      1 font-lock-function-name-face t))
              ess-R-mode-font-lock-keywords)))
 #+END_SRC
+*** Running
+    After performing the installation steps above, =M-- M-x slime RET R
+    RET= should start swank.  You will be prompted to accept a version
+    mismatch -- simply accept -- then the SLIME REPL should start up,
+    giving a prompt.  Enjoy!
+** Proof-of-concept (OBSOLETE)
+   [ The instructions here are for the seriously impatient, and do not
+   give as good an experience ]
+
+   To begin using swankr:
+
+   1. start R;
+   2. load the swank.R file:
+#+BEGIN_SRC R
+      source("swank.R")
+#+END_SRC
+   3. at the R prompt, run
+#+BEGIN_SRC R
+      swank();
+#+END_SRC
+   4. within emacs, load and initialize slime;
+#+BEGIN_SRC emacs-lisp
+      (require 'slime)
+      (slime-setup '(slime-repl slime-presentations slime-media))
+#+END_SRC
+   5. run =M-x slime-connect=, accepting the default host and port,
+      and acknowledging the protocol version mismatch.
+
+   At this point, an R REPL should appear.
 * Development
   swankr's primary development repository is a git repository,
   accessible through
   <http://common-lisp.net/r/users/crhodes/swankr.git> and
-  git://common-lisp.net/crhodes/swankr/swankr.git; a web view of the
+  git://common-lisp.net/users/crhodes/swankr.git; a web view of the
   development history is [[http://common-lisp.net/gitweb?p=users/crhodes/swankr.git][available through gitweb]].  You can also view
   the current lists of [[file:BUGS.org]] and [[file:TODO.org]] items.
 * Acknowledgments
