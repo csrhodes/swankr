@@ -74,6 +74,11 @@
   I'm not sure what else that does.
 * RESOLVED #20 closing the connection causes infinite R errors    :IMPORTANT:
   reported by "Philipp Marek" <philipp@marek.priv.at> by private mail.
+* OPEN #21 inspecting an environment causes error in match()          :MINOR:
+  reported by "Philipp Marek" <philipp@marek.priv.at> by private mail.
+
+  To reproduce, C-c I globalenv() RET, or hit RET on environment
+  presentations in the debugger (if presentations are on).
 * COMMENT:
 Local Variables:
 mode: org;
