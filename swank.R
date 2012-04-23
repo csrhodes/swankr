@@ -601,12 +601,19 @@ resetInspector <- function(slimeConnection) {
 }
 
 inspectObject <- function(slimeConnection, object) {
+  vectorify <- function(x) {
+    if(is.vector(x)) {
+      x
+    } else {
+      list(x)
+    }
+  }
   previous <- slimeConnection$istate
   slimeConnection$istate <- new.env()
   slimeConnection$istate$object <- object
   slimeConnection$istate$previous <- previous
   slimeConnection$istate$content <- emacsInspect(object)
-  if(!(object %in% slimeConnection$inspectorHistory)) {
+  if(!(vectorify(object) %in% slimeConnection$inspectorHistory)) {
     slimeConnection$inspectorHistory <- c(slimeConnection$inspectorHistory, object)
   }
   if(!is.null(slimeConnection$istate$previous)) {
