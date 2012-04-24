@@ -348,7 +348,16 @@ sendReplResultFunction <- sendReplResult
 }
 
 `swank:operator-arglist` <- function(slimeConnection, sldbState, op, package) {
-  list()
+  if(!exists(op, envir = globalenv())) {
+    return(list())
+  }
+  funoid <- get(op, envir = globalenv())
+  if(is.function(funoid)) {
+    args <- formals(funoid)
+    paste(sprintf("%s=%s", names(args), args), collapse=", ")
+  } else {
+    list()
+  }
 }
 
 `swank:throw-to-toplevel` <- function(slimeConnection, sldbState) {
