@@ -72,13 +72,17 @@
 * OPEN #19 base graphics don't work automatically                    :NORMAL:
   They can be made to by passing --interactive to R on startup, but
   I'm not sure what else that does.
-* RESOLVED #20 closing the connection causes infinite R errors    :IMPORTANT:
+* RESOLVED #20 closing the connection causes infinite R errors :IMPORTANT:FIXED:
   reported by "Philipp Marek" <philipp@marek.priv.at> by private mail.
-* RESOLVED #21 inspecting an environment causes error in match()      :MINOR:
+* RESOLVED #21 inspecting an environment causes error in match() :MINOR:FIXED:
   reported by "Philipp Marek" <philipp@marek.priv.at> by private mail.
 
   To reproduce, C-c I globalenv() RET, or hit RET on environment
   presentations in the debugger (if presentations are on).
+* OPEN #22 completion of named list fields                         :WISHLIST:
+  It is very nice in ESS to be able to type df$ TAB and get a
+  completion list of the data frame's columns.  Supporting it in
+  swankr should be really easy.
 * COMMENT:
 Local Variables:
 mode: org;
