@@ -79,7 +79,7 @@
 
   To reproduce, C-c I globalenv() RET, or hit RET on environment
   presentations in the debugger (if presentations are on).
-* OPEN #22 completion of named list fields                         :WISHLIST:
+* RESOLVED #22 completion of named list fields               :WISHLIST:FIXED:
   It is very nice in ESS to be able to type df$ TAB and get a
   completion list of the data frame's columns.  Supporting it in
   swankr should be really easy.
