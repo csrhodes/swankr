@@ -658,7 +658,7 @@ inspectObject <- function(slimeConnection, object) {
 
 valuePart <- function(istate, object, string) {
   list(quote(`:value`),
-       if(is.null(string)) printToString(object) else string,
+       if(is.null(string)) prin1ToString(object) else string,
        assignIndexInParts(object, istate))
 }
 
@@ -669,7 +669,7 @@ preparePart <- function(istate, part) {
     switch(as.character(part[[1]]),
            `:newline` = list("\n"),
            `:value` = valuePart(istate, part[[2]], part[[3]]),
-           `:line` = list(printToString(part[[2]]), ": ",
+           `:line` = list(prin1ToString(part[[2]]), ": ",
              valuePart(istate, part[[3]], NULL), "\n"))
   }
 }
