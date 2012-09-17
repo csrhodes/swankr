@@ -345,7 +345,7 @@ sendReplResultFunction <- sendReplResult
 }
 
 `swank:autodoc` <- function(slimeConnection, sldbState, rawForm, ...) {
-  "No Arglist Information"
+  list("No Arglist Information", TRUE)
 }
 
 `swank:operator-arglist` <- function(slimeConnection, sldbState, op, package) {
