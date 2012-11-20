@@ -514,6 +514,17 @@ computeRestartsForEmacs <- function (sldbState) {
                     ifelse(x[3]==1, x[6]+colOffset-1, x[6]))))
   }
   transformSrcrefs <- function(s) {
+    ## horrendous KLUDGE: we need to short-circuit here for "name"
+    ## objects, rather than having a nice uniform behaviour, because
+    ## for expressions of the form x[y,] there is an empty "name"
+    ## which ends up becoming a `missing' object when passed through
+    ## the switch; why, I do not know, but it is then impossible to
+    ## return it, because returning it attempts to evaluate it and
+    ## evaluating it is an error.  Fortunately it appears that names
+    ## don't have srcrefs attached.
+    if(mode(s) == "name") {
+      return(s)
+    }
     srcrefs <- attr(s, "srcref")
     attribs <- attributes(s)
     new <- 
