@@ -525,6 +525,12 @@ computeRestartsForEmacs <- function (sldbState) {
     if(mode(s) == "name") {
       return(s)
     }
+    if(is(s, "srcref")) {
+      ## more monumental KLUDGE: parsing (in 2.14, at least) appears
+      ## to put srcrefs directly in `length 2' objects, which we need
+      ## to frob directly.
+      return(frob(list(s))[[1]])
+    }
     srcrefs <- attr(s, "srcref")
     attribs <- attributes(s)
     new <- 
@@ -535,6 +541,9 @@ computeRestartsForEmacs <- function (sldbState) {
     attributes(new) <- attribs
     if(!is.null(attr(s, "srcref"))) {
       attr(new, "srcref") <- frob(srcrefs)
+    }
+    if(!is.null(attr(s, "wholeSrcref"))) {
+      attr(new, "wholeSrcref") <- frob(list(attr(s, "wholeSrcref")))[[1]]
     }
     new
   }
