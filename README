@@ -47,7 +47,7 @@ git clone https://github.com/slime/slime.git
 (setq slime-lisp-implementations
       '((sbcl ("sbcl" "--dynamic-space-size" "2048" "--load" "/home/csr21/src/lisp/quicklisp/setup.lisp"))
         (git-sbcl ("sh" "/home/csr21/src/lisp/sbcl/run-sbcl.sh" "--dynamic-space-size" "2048"))
-        (R ("R" "--no-save" "--max-vsize=4096M")
+        (R ("R" "--no-save" "--max-vsize=4096M" "--interactive")
            :init (lambda (port-filename coding-system) 
                    (load "/home/csr21/src/R/swankr/swankr")
                    (format

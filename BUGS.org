@@ -67,9 +67,9 @@
   (Almost certainly not; I suspect we naïvely use nchar() in places).
   We could either declare our encoding as latin1-unix, or make the
   server utf8ly correct.  To reproduce, simply type "ë" at the repl.
-* OPEN #18 ess-help needs to be loaded automatically                  :MINOR:
+* RESOLVED #18 ess-help needs to be loaded automatically              :MINOR:
   to reproduce: in a fresh emacs, type ?help
-* OPEN #19 base graphics don't work automatically                    :NORMAL:
+* RESOLVED #19 base graphics don't work automatically                :NORMAL:
   They can be made to by passing --interactive to R on startup, but
   I'm not sure what else that does.
 * RESOLVED #20 closing the connection causes infinite R errors :IMPORTANT:FIXED:

@@ -13,7 +13,7 @@
    be able to get the slimeConnection and sldbState currently active
    (because the interrupt can happen at any point...)
 * Protocol requests
-** core slimefuns [33/95]
+** core slimefuns [35/95]
    - [ ] ping
    - [X] create-repl
    - [ ] create-listener
@@ -65,8 +65,8 @@
    - [X] simple-completions
    - [X] operator-arglist
    - [ ] apropos-list-for-emacs
-   - [ ] describe-symbol
-   - [ ] describe-function
+   - [X] describe-symbol
+   - [X] describe-function
    - [ ] describe-definition-for-emacs
    - [ ] documentation-symbol
    - [ ] list-all-package-names
