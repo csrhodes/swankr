@@ -23,14 +23,14 @@
 * Installation
 ** Emacs configuration
 *** Installing SLIME
-    SLIME is required separately from swankr.  To install slime,
-    perhaps the simplest is to pull the CVS sources into a
+    [[http://common-lisp.net/project/slime/][SLIME]] is required separately from swankr.  To install slime,
+    perhaps the simplest is to pull the [[https://github.com/slime/slime][git sources]] into a
     user-specific site directory, and arrange for that to be on the
-    emacs =load-path=; I did
+    emacs =load-path=; something like the following:
 #+begin_src sh
 mkdir -p ~/.emacs.d/site-lisp
 cd ~/.emacs.d/site-lisp
-cvs -z3 -d:pserver:anonymous:anonymous@common-lisp.net:/project/slime/cvsroot co slime
+git clone https://github.com/slime/slime.git
 #+end_src
 
     Following that, I have in my =~/.emacs= (you will need to adjust
@@ -49,6 +49,7 @@ cvs -z3 -d:pserver:anonymous:anonymous@common-lisp.net:/project/slime/cvsroot co
         (git-sbcl ("sh" "/home/csr21/src/lisp/sbcl/run-sbcl.sh" "--dynamic-space-size" "2048"))
         (R ("R" "--no-save" "--max-vsize=4096M")
            :init (lambda (port-filename coding-system) 
+                   (load "/home/csr21/src/R/swankr/swankr")
                    (format
                     "source('/home/csr21/src/R/swankr/swank.R', keep.source=TRUE, chdir=TRUE)\nstartSwank('%s')\n" port-filename)))))
 (global-set-key (kbd "s-s") 'slime-selector)
@@ -79,30 +80,6 @@ cvs -z3 -d:pserver:anonymous:anonymous@common-lisp.net:/project/slime/cvsroot co
     RET= should start swank.  You will be prompted to accept a version
     mismatch -- simply accept -- then the SLIME REPL should start up,
     giving a prompt.  Enjoy!
-** Proof-of-concept (OBSOLETE)
-   [ The instructions here are for the seriously impatient, and do not
-   give as good an experience ]
-
-   To begin using swankr:
-
-   1. start R;
-   2. load the swank.R file:
-#+BEGIN_SRC R
-      source("swank.R")
-#+END_SRC
-   3. at the R prompt, run
-#+BEGIN_SRC R
-      swank();
-#+END_SRC
-   4. within emacs, load and initialize slime;
-#+BEGIN_SRC emacs-lisp
-      (require 'slime)
-      (slime-setup '(slime-repl slime-presentations slime-media))
-#+END_SRC
-   5. run =M-x slime-connect=, accepting the default host and port,
-      and acknowledging the protocol version mismatch.
-
-   At this point, an R REPL should appear.
 * Development
   swankr's primary development repository is a git repository,
   accessible through
