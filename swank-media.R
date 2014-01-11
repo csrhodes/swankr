@@ -42,9 +42,7 @@ makeMediaReplResult.matrix <- function(value) {
 }
 
 makeMediaReplResult.help_files_with_topic <- function(value) {
-  output <- capture.output(tools:::Rd2txt(utils:::.getHelpFile(value),
-                                          options=list(underline_titles=FALSE)))
-  string <- paste(output, collapse="\n")
+  string <- helpFilesWithTopicString(value)
   list(quote(`:popup-buffer`), sprintf("*slime-help(%s)*", attr(value, "topic")),
        string, quote(`ess-help-mode`))
 }

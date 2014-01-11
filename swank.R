@@ -361,6 +361,22 @@ sendReplResultFunction <- sendReplResult
   }
 }
 
+`swank:describe-function` <- function(slimeConnection, sldbState, op, package) {
+  ## FIXME: maybe not the best match?
+  `swank:operator-arglist`(slimeConnection, sldbState, op, package)
+}
+
+helpFilesWithTopicString <- function(value) {
+  output <- capture.output(tools:::Rd2txt(utils:::.getHelpFile(value),
+                                          options=list(underline_titles=FALSE)))
+  paste(output, collapse="\n")
+}
+
+`swank:describe-symbol` <- function(slimeConnection, sldbState, op, package) {
+  value <- help(op)
+  helpFilesWithTopicString(value)
+}
+
 `swank:throw-to-toplevel` <- function(slimeConnection, sldbState) {
   condition <- simpleCondition("Throw to toplevel")
   class(condition) <- c("swankTopLevel", class(condition))
