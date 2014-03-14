@@ -470,43 +470,46 @@ computeRestartsForEmacs <- function (sldbState) {
        list())
 }
 
+symbolFieldsCompletion <- function(object, prefix, rest) {
+  ## FIXME: this is hacky, ignoring several syntax issues (use of
+  ## and/or necessity for backquoting identifiers: e.g. fields
+  ## containing hyphens)
+  if((dollar <- regexpr("$", rest, fixed=TRUE)) == -1) {
+    matches <- grep(sprintf("^%s", literal2rx(rest)), names(object), value=TRUE)
+    matches <- sprintf("%s$%s", gsub("\\$[^$]*$", "", prefix), matches)
+    returnMatches(matches)
+  } else {
+    if(exists(substr(rest, 1, dollar-1), object)) {
+      symbolFieldsCompletion(get(substr(rest, 1, dollar-1), object), prefix, substr(rest, dollar+1, nchar(rest)))
+    } else {
+      returnMatches(character(0))
+    }
+  }
+}
+
+returnMatches <- function(matches) {
+  nmatches <- length(matches)
+  if(nmatches == 0) {
+    list(list(), "")
+  } else {
+    longest <- matches[order(nchar(matches))][1]
+    while(length(grep(sprintf("^%s", literal2rx(longest)), matches)) < nmatches) {
+      longest <- substr(longest, 1, nchar(longest)-1)
+    }
+    list(as.list(matches), longest)
+  }
+}
+
+literal2rx <- function(string) {
+  ## list of ERE metacharacters from ?regexp
+  gsub("([.\\|()[{^$*+?])", "\\\\\\1", string)
+}
+
 `swank:simple-completions` <- function(slimeConnection, sldbState, prefix, package) {
-  symbolFieldsCompletion <- function(object, rest) {
-    ## FIXME: this is hacky, ignoring several syntax issues (use of
-    ## and/or necessity for backquoting identifiers: e.g. fields
-    ## containing hyphens)
-    if((dollar <- regexpr("$", rest, fixed=TRUE)) == -1) {
-      matches <- grep(sprintf("^%s", literal2rx(rest)), names(object), value=TRUE)
-      matches <- sprintf("%s$%s", gsub("\\$[^$]*$", "", prefix), matches)
-      returnMatches(matches)
-    } else {
-      if(exists(substr(rest, 1, dollar-1), object)) {
-        symbolFieldsCompletion(get(substr(rest, 1, dollar-1), object), substr(rest, dollar+1, nchar(rest)))
-      } else {
-        returnMatches(character(0))
-      }
-    }
-  }
-  returnMatches <- function(matches) {
-    nmatches <- length(matches)
-    if(nmatches == 0) {
-      list(list(), "")
-    } else {
-      longest <- matches[order(nchar(matches))][1]
-      while(length(grep(sprintf("^%s", literal2rx(longest)), matches)) < nmatches) {
-        longest <- substr(longest, 1, nchar(longest)-1)
-      }
-      list(as.list(matches), longest)
-    }
-  }
-  literal2rx <- function(string) {
-    ## list of ERE metacharacters from ?regexp
-    gsub("([.\\|()[{^$*+?])", "\\\\\\1", string)
-  }
   matches <- apropos(sprintf("^%s", literal2rx(prefix)), ignore.case=FALSE)
   nmatches <- length(matches)
   if((nmatches == 0) && ((dollar <- regexpr("$", prefix, fixed=TRUE)) > -1)) {
-    symbolFieldsCompletion(globalenv(), prefix)
+    symbolFieldsCompletion(globalenv(), prefix, prefix)
   } else {
     returnMatches(matches)
   }
