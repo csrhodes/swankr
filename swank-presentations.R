@@ -4,6 +4,8 @@ savePresentedObject <- function(slimeConnection, value) {
   if(!exists("idToObject", envir=slimeConnection)) {
     assign("idToObject", new.env(), envir=slimeConnection)
   }
+  ## FIXME this should check for value already being present in the
+  ## idToObject map
   presentationCounter <<- presentationCounter + 1
   assign(as.character(presentationCounter), value, envir=slimeConnection$idToObject)
   presentationCounter
@@ -43,7 +45,12 @@ sendReplResultFunction <- presentReplResult
     stop(sprintf("attempt to access unrecorded object (id %d)", id))
   }
 }
-    
+
+`swank:lookup-and-save-presented-object-or-lose` <- function(slimeConnection, sldbState, id) {
+  obj <- `swank:lookup-presented-object-or-lose`(slimeConnection, sldbState, id)
+  savePresentedObject(slimeConnection, obj)
+}
+
 `swank:clear-repl-results` <- function(slimeConnection, sldbState) {
   if(!exists("idToObject", envir=slimeConnection)) {
     assign("idToObject", new.env(), envir=slimeConnection)
