@@ -118,7 +118,7 @@
 * Unimplemented contribs
 ** Wanted
 *** swank-fancy-inspector
-*** swank-c-p-c
+*** DONE swank-c-p-c
 *** swank-fuzzy
 *** swank-arglists
 *** swank-snapshot
