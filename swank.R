@@ -381,6 +381,25 @@ helpFilesWithTopicString <- function(value) {
   helpFilesWithTopicString(value)
 }
 
+`swank:apropos-list-for-emacs` <- function(slimeConnection, sldbState, name, onlyExternal, package, caseSensitive) {
+  x <- help.search(name, fields="alias", package=.packages())$matches
+  brieflyDescribe <- function(name, title) {
+    if (exists(name, globalenv())) {
+      val <- get(name, globalenv())
+      kind <- if("function" %in% class(val)) quote(`:function`) else quote(`:variable`)
+      list(quote(`:designator`), name, kind, title)
+    } else {
+      ## maybe
+      list(quote(`:designator`), name, quote(`:type`), title)
+    }
+  }
+  mapply(brieflyDescribe, x[,"name"], x[,"title"], SIMPLIFY=FALSE)
+}
+
+`swank:describe-definition-for-emacs` <- function(slimeConnection, sldbState, name, kind) {
+  `swank:describe-symbol`(slimeConnection, sldbState, name, NULL)
+}
+
 `swank:throw-to-toplevel` <- function(slimeConnection, sldbState) {
   condition <- simpleCondition("Throw to toplevel")
   class(condition) <- c("swankTopLevel", class(condition))
