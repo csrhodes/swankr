@@ -344,6 +344,10 @@ sendReplResultFunction <- sendReplResult
   list()
 }
 
+`swank:clear-repl-variables` <- function(slimeConnection, sldbState) {
+  list()
+}
+
 `swank:autodoc` <- function(slimeConnection, sldbState, rawForm, ...) {
   list("No Arglist Information", TRUE)
 }
