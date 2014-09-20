@@ -314,6 +314,8 @@ printToString <- function(val) {
   list("R", "R")
 }
 
+`swank-repl:create-repl` <- `swank:create-repl`
+
 makeReplResult <- function(value) {
   string <- printToString(value)
   list(quote(`:write-string`), string,
@@ -343,6 +345,8 @@ sendReplResultFunction <- sendReplResult
   }
   list()
 }
+
+`swank-repl:listener-eval` <- `swank:listener-eval`
 
 `swank:clear-repl-variables` <- function(slimeConnection, sldbState) {
   list()
