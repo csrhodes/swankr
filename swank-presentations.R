@@ -22,8 +22,6 @@ presentReplResult <- function(slimeConnection, value) {
               list(quote(`:write-string`), "\n", quote(`:repl-result`)))
 }
 
-sendReplResultFunction <- presentReplResult
-
 `cl:nth-value` <- function(slimeConnection, sldbState, n, values) {
   values[[n+1]]
 }
@@ -56,5 +54,10 @@ sendReplResultFunction <- presentReplResult
     assign("idToObject", new.env(), envir=slimeConnection)
   }
   rm(list=ls(slimeConnection$idToObject), envir=slimeConnection$idToObject)
+  TRUE
+}
+
+`swank:init-presentations` <- function(slimeConnection, sldbState) {
+  sendReplResultFunction <<- presentReplResult
   TRUE
 }
