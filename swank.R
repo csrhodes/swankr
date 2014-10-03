@@ -141,19 +141,27 @@ readPacket <- function(io) {
   header <- readChunk(io, 6)
   len <- strtoi(header, base=16)
   payload <- readChunk(io, len)
-  readSexpFromString(payload)
+  sexp <- readSexpFromString(payload)
+  sexp
 }
 
 readChunk <- function(io, len) {
-  buffer <- readChar(io, len)
+  buffer <- readChar(io, len, useBytes=TRUE)
   if(length(buffer) == 0) {
     condition <- simpleCondition("End of file on io")
     class(condition) <- c("endOfFile", class(condition))
     signalCondition(condition)
   }
-  if(nchar(buffer) != len) {
-    stop("short read in readChunk")
-  }
+  ## FIXME: with the useBytes argument to readChar, it is normal for
+  ## the buffer returned to be fewer character than bytes were read,
+  ## given the possibility of multibyte characters.  However, that
+  ## means we can’t detect at all the case where there is actually a
+  ## short read (though empirically the readChar call blocks rather
+  ## than returning early).
+  ##
+  ## if(nchar(buffer) != len) {
+  ##   stop("short read in readChunk")
+  ## }
   buffer
 }
 

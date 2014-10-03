@@ -15,7 +15,7 @@
   with a reference to the corresponding source.  Unfortunately, emacs
   only passes the buffer position in bytes (or maybe characters),
   whereas R's srcrefs work with lines and columns.
-* OPEN #4 multibyte characters corrupt slime connection              :NORMAL:
+* RESOLVED #4 multibyte characters corrupt slime connection          :NORMAL:
   Not in all circumstances (e.g. ="£"= is OK) but =1:£= fails in
   slime-net-read-or-lose.
 * RESOLVED #5 respect visibility of evaluated results        :WISHLIST:FIXED:
@@ -61,7 +61,7 @@
 * OPEN #16 ESS configuration                                          :MINOR:
   sorting out the function regexp at least, but generally reducing
   dependence might be good.
-* OPEN #17 encoding / external-format confusion                      :NORMAL:
+* RESOLVED #17 encoding / external-format confusion                  :NORMAL:
   We declare ourselves capable of handling utf-8-unix encoding, but
   whether we actually do anything close to being correct is unclear.
   (Almost certainly not; I suspect we naïvely use nchar() in places).
