@@ -383,6 +383,9 @@ sendReplResultFunction <- sendReplResult
 }
 
 helpFilesWithTopicString <- function(value) {
+  if (length(value) > 1) {
+    value <- value[length(value)]
+  }
   output <- capture.output(tools:::Rd2txt(utils:::.getHelpFile(value),
                                           options=list(underline_titles=FALSE)))
   paste(output, collapse="\n")
